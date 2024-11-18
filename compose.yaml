@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "80:80"  # Port d'exposition interne pour l'application
+      - "3000:3000"  # Port d'exposition interne pour l'application
     volumes:
       - .:/app        # Monte le dossier actuel dans le conteneur
       - /app/node_modules # Évite les conflits avec node_modules de l'hôte
@@ -36,18 +36,18 @@ services:
     networks:
       - db-network
     
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   container_name: pgadmin
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: admin@gmail.com
-  #     PGADMIN_DEFAULT_PASSWORD: drowssap
-  #   ports:
-  #     - "5050:80"
-  #   networks:
-  #     - db-network
-  #   depends_on:
-  #     - db
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: drowssap
+    ports:
+      - "5050:80"
+    networks:
+      - db-network
+    depends_on:
+      - db
 
 volumes:
   db-data:
