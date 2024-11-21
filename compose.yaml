@@ -11,7 +11,7 @@ services:
     environment:
       NODE_ENV: development
     networks:
-      - app-network
+      - db-network
 
   # nginx:
   #   image: nginx:latest
@@ -54,4 +54,3 @@ volumes:
 
 networks:
   db-network:
-  app-network:
