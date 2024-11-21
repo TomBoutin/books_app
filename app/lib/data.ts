@@ -1,4 +1,4 @@
-import pool from '@/postgres';
+import pool from '@/app/lib/db';
 
 const fetchAll = async () => {
     console.log('fetching data');
