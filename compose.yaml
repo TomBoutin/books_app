@@ -9,7 +9,10 @@ services:
       - .:/app        # Monte le dossier actuel dans le conteneur
       - /app/node_modules # Évite les conflits avec node_modules de l'hôte
     environment:
-      NODE_ENV: development
+      - NODE_ENV=development
+      - POSTGRES_DB=projet
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=drowssap
     networks:
       - db-network
 
@@ -28,7 +31,7 @@ services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_USER: user
+      POSTGRES_USER: admin
       POSTGRES_PASSWORD: drowssap
       POSTGRES_DB: projet
     volumes:

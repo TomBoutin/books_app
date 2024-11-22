@@ -1,13 +1,15 @@
-import pool from '@/app/lib/db';
+import {db} from '@/app/lib/db';
+import {Intervenants} from '@/app/lib/types';
 
-const fetchAll = async () => {
+
+export default async function fetchAll(): Promise<Intervenants[]> {
     console.log('fetching data');
     try {
-        const client = await pool.connect();
+        const client = await db.connect();
         console.log('connected');
 
         const result = await client.query('SELECT * FROM public.intervenants');
-        const data = result.rows;
+        const data = result.rows as Intervenants[];
         console.log('Données :', data);
 
         client.release();
@@ -18,5 +20,3 @@ const fetchAll = async () => {
     }
 
 }
-
-export default fetchAll;
