@@ -1,4 +1,4 @@
-export interface Intervenants {
+export interface Intervenant {
     id: number;
     email: string;
     firstname: string;
@@ -8,3 +8,8 @@ export interface Intervenants {
     enddate: string;
     availability: string | null;
   }
+
+  export type IntervenantField = {
+    id: string;
+    name: string;
+  };

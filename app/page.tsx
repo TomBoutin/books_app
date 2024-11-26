@@ -1,8 +1,8 @@
 import Image from "next/image";
-import fetchAllIntervenants from "./lib/data";
+import fetchAllIntervenant from "./lib/data";
 
 
-fetchAllIntervenants()
+fetchAllIntervenant()
   .then((data) => {
     console.log(data);
   })

@@ -1,7 +1,7 @@
-import fetchAllIntervenants from "@/app/lib/data";
+import fetchAllIntervenant from "@/app/lib/data";
 
 export default async function Home() {
-  const data = await fetchAllIntervenants();
+  const data = await fetchAllIntervenant();
 
   return (
     <div>

@@ -5,6 +5,6 @@
 
 @layer base {
   :root{
-    --primary: rgb(255, 111, 0);
+    --primary: rgb(255, 111, 0); 
   }
-}
+} 

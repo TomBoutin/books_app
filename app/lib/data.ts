@@ -1,16 +1,16 @@
 import {db} from '@/app/lib/db';
-import {Intervenants} from '@/app/lib/types';
+import {Intervenant} from '@/app/lib/types';
 
 const ITEMS_PER_PAGE = 10;
 
-export default async function fetchAllIntervenants(): Promise<Intervenants[]> {
+export default async function fetchAllIntervenant(): Promise<Intervenant[]> {
     console.log('fetching data');
     try {
         const client = await db.connect();
         console.log('connected');
 
         const result = await client.query('SELECT * FROM public.intervenants');
-        const data = result.rows as Intervenants[];
+        const data = result.rows as Intervenant[];
         console.log('Données :', data);
 
         client.release();
@@ -22,7 +22,7 @@ export default async function fetchAllIntervenants(): Promise<Intervenants[]> {
 
 }
 
-export async function fetchFilteredIntervenants(query: string, currentPage: number): Promise<Intervenants[]> {
+export async function fetchFilteredIntervenant(query: string, currentPage: number): Promise<Intervenant[]> {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
@@ -38,17 +38,17 @@ export async function fetchFilteredIntervenants(query: string, currentPage: numb
       ORDER BY creationdate DESC
       LIMIT $2 OFFSET $3
     `, [`%${query}%`, ITEMS_PER_PAGE, offset]);
-    const data = result.rows as Intervenants[];
+    const data = result.rows as Intervenant[];
     client.release();
     return data;
   } catch (err) {
     console.error('Database Error:', err);
-    throw new Error('Failed to fetch intervenants.');
+    throw new Error('Erreur lors de la récupération des intervenants.');
   }
 }
 
 
-export async function fetchIntervenantsPages(query: string): Promise<number> {
+export async function fetchIntervenantPages(query: string): Promise<number> {
     try {
       const client = await db.connect();
       const result = await client.query(`
@@ -65,6 +65,6 @@ export async function fetchIntervenantsPages(query: string): Promise<number> {
       return totalPages;
     } catch (err) {
       console.error('Database Error:', err);
-      throw new Error('Failed to fetch total number of intervenants.');
+      throw new Error('Erreur lors de la récupération des intervenants.');
     }
   }

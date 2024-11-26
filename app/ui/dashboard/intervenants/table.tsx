@@ -1,22 +1,23 @@
-import { fetchFilteredIntervenants } from "@/app/lib/data";
+import { fetchFilteredIntervenant } from "@/app/lib/data";
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { format, isBefore } from 'date-fns';
+import { DeleteIntervenant, UpdateIntervenant } from './buttons';
 
-export default async function InvoicesTable({
+export default async function IntervenantTable({
     query,
     currentPage,
   }: {
     query: string;
     currentPage: number;
   }) {
-    const intervenants = await fetchFilteredIntervenants(query, currentPage);
+    const Intervenant = await fetchFilteredIntervenant(query, currentPage);
 
   return (
     <div className="mt-6 flow-root">
       <div className="inline-block min-w-full align-middle">
         <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
           <div className="md:hidden">
-            {intervenants?.map((intervenant) => (
+            {Intervenant?.map((intervenant) => (
               <div
                 key={intervenant.id}
                 className="mb-2 w-full rounded-md bg-white p-4"
@@ -47,13 +48,13 @@ export default async function InvoicesTable({
                 <th scope="col" className="px-3 py-5 font-medium">
                   Validité de la clé
                 </th>
-                <th scope="col" className="relative py-3 pl-6 pr-3">
-                  <span className="sr-only">Edit</span>
+                <th scope="col" className="px-3 py-5 font-medium text-end">
+                  <span className="">Action</span>
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white">
-              {intervenants?.map((intervenant) => (
+              {Intervenant?.map((intervenant) => (
                 <tr
                   key={intervenant.id}
                   className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
@@ -81,8 +82,8 @@ export default async function InvoicesTable({
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">
-                      {/* <UpdateInvoice id={invoice.id} />
-                      <DeleteInvoice id={invoice.id} /> */}
+                      <UpdateIntervenant id={intervenant.id} />
+                      <DeleteIntervenant id={intervenant.id} /> 
                     </div>
                   </td>
                 </tr>
