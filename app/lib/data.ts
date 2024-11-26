@@ -9,7 +9,7 @@ export default async function fetchAllIntervenant(): Promise<Intervenant[]> {
         const client = await db.connect();
         console.log('connected');
 
-        const result = await client.query('SELECT * FROM public.intervenants');
+        const result = await client.query('SELECT * FROM public.intervenants ORDER BY id ASC');
         const data = result.rows as Intervenant[];
         console.log('Données :', data);
 
@@ -33,9 +33,8 @@ export async function fetchFilteredIntervenant(query: string, currentPage: numbe
       WHERE
         firstname ILIKE $1 OR
         lastname ILIKE $1 OR
-        email ILIKE $1 OR
-        key ILIKE $1
-      ORDER BY creationdate DESC
+        email ILIKE $1
+      ORDER BY id ASC
       LIMIT $2 OFFSET $3
     `, [`%${query}%`, ITEMS_PER_PAGE, offset]);
     const data = result.rows as Intervenant[];
@@ -57,8 +56,7 @@ export async function fetchIntervenantPages(query: string): Promise<number> {
         WHERE
           firstname ILIKE $1 OR
           lastname ILIKE $1 OR
-          email ILIKE $1 OR
-          key ILIKE $1
+          email ILIKE $1
       `, [`%${query}%`]);
       client.release();
       const totalPages = Math.ceil(Number(result.rows[0].count) / ITEMS_PER_PAGE);

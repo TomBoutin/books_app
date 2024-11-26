@@ -5,6 +5,6 @@
 
 @layer base {
   :root{
-    --primary: rgb(255, 111, 0); 
+    --primary: 26deg, 100%, 50%; /* hsl(26, 100%, 50%) */
   }
 } 

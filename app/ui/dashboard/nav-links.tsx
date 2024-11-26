@@ -14,7 +14,7 @@ const links = [
     href: '/dashboard/disponibilites',
     icon: CalendarDateRangeIcon,
   },
-  { name: 'Intervenant', href: '/dashboard/Intervenant', icon: UserGroupIcon },
+  { name: 'Intervenants', href: '/dashboard/intervenants', icon: UserGroupIcon },
 ];
 
 export default function NavLinks() {

@@ -5,6 +5,7 @@ import { Intervenant } from '@/app/lib/types';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { v4 as uuidv4 } from 'uuid';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -46,7 +47,7 @@ export async function createIntervenant(prevState: State, formData: FormData) {
 
     // Prepare data for insertion into the database
     const { email, firstname, lastname } = validatedFields.data;
-    const key = Math.random().toString(36).substring(7);
+    const key = uuidv4();
     const date = new Date().toISOString().split('T')[0];
     
     // enddate = date + 2 mois
@@ -63,6 +64,12 @@ export async function createIntervenant(prevState: State, formData: FormData) {
         client.release();
     } catch (error) {
         console.error('Database Error:', error);
+        if ((error as any).code == '23505') { // PostgreSQL unique violation error code
+            return {
+                errors: { email: ['Cet email est déjà utilisé.'] },
+                message: 'Erreur lors de la création de l\'intervenant.',
+            };
+        }
         return {
             message: 'Erreur lors de la création de l\'intervenant.',
         };
