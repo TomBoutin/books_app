@@ -9,27 +9,47 @@ import { v4 as uuidv4 } from 'uuid';
 
 const ITEMS_PER_PAGE = 10;
 
-const FormSchema = z.object({
+const CreateFormSchema = z.object({
     email: z.string().email(),
     firstname: z.string(),
     lastname: z.string(),
 });
 
-// const CreateIntervenant = FormSchema.omit({email: true})
-const CreateIntervenant = FormSchema;
+const UpdateFormSchema = z.object({
+    email: z.string().email(),
+    firstname: z.string(),
+    lastname: z.string(),
+    enddate: z.string(),
+});
+
+// const CreateIntervenant = CreateFormSchema.omit({email: true})
+const CreateIntervenant = CreateFormSchema;
+
+const UpdateIntervenant = UpdateFormSchema;
 
 
-export type State = {
+export type CreateState = {
     errors?: {
         email?: string[];
         firstname?: string[];
         lastname?: string[];
+        
+    };
+    message?: string | null;
+};
+
+export type UpdateState = {
+    errors?: {
+        email?: string[];
+        firstname?: string[];
+        lastname?: string[];
+        enddate?: string[];
     };
     message?: string | null;
 };
 
 
-export async function createIntervenant(prevState: State, formData: FormData) {
+export async function createIntervenant(prevState: CreateState, formData: FormData) {
     // Validate form using Zod
     const validatedFields = CreateIntervenant.safeParse({
         email: formData.get('email'),
@@ -79,6 +99,50 @@ export async function createIntervenant(prevState: State, formData: FormData) {
     revalidatePath('/dashboard/intervenants');
     redirect('/dashboard/intervenants');
 }
+
+
+export async function updateIntervenant(
+    id: string,
+    prevState: UpdateState,
+    formData: FormData,
+  ) {
+    const validatedFields = UpdateIntervenant.safeParse({
+        email: formData.get('email'),
+        firstname: formData.get('firstname'),
+        lastname: formData.get('lastname'),
+        enddate: formData.get('enddate'),
+    });
+   
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Champs invalides. Erreur lors de la modification de l\'intervenant.',
+        };
+    }
+   
+    const { email, firstname, lastname, enddate } = validatedFields.data;
+   
+    try {
+        const client = await db.connect();
+        await client.query('UPDATE public.intervenants SET email = $1, firstname = $2, lastname = $3, enddate = $4 WHERE id = $5', [email, firstname, lastname, enddate, id]);
+        client.release();
+    } catch (error) {
+        console.error('Database Error:', error);
+        if ((error as any).code == '23505') { // PostgreSQL unique violation error code
+            return {
+                errors: { email: ['Cet email est déjà utilisé.'] },
+                message: 'Erreur lors de la modification de l\'intervenant.',
+            };
+        }
+        return {
+            message: 'Erreur lors de la modification de l\'intervenant.',
+        };
+}
+   
+    revalidatePath('/dashboard/intervenants');
+    redirect('/dashboard/intervenants');
+  }
+
 
 export async function deleteIntervenant(id: number): Promise<void> {
     try {

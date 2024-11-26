@@ -10,12 +10,12 @@ import {
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
-import { createIntervenant, State } from '@/app/lib/action';
+import { createIntervenant, CreateState } from '@/app/lib/action';
 import { useActionState } from 'react';
 
 
 export default function Form() {
-  const initialState: State = { message: null, errors: {} };
+  const initialState: CreateState = { message: null, errors: {} };
   const [state, formAction] = useActionState(createIntervenant, initialState);
 
   return (

@@ -13,3 +13,11 @@ export interface Intervenant {
     id: string;
     name: string;
   };
+
+  export type IntervenantForm = {
+    id: number;
+    email: string;
+    firstname: string;
+    lastname: string;
+    enddate: string;
+  };

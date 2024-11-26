@@ -1,38 +1,34 @@
-import Form from '@/app/ui/invoices/edit-form';
-import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
- 
+import Breadcrumbs from '@/app/ui/dashboard/intervenants/breadcrumbs';
+import EditIntervenantForm from '@/app/ui/dashboard/intervenants/edit-form';
+import { fetchIntervenantById } from '@/app/lib/data';
+
 export const metadata: Metadata = {
   title: 'Edit Invoice',
 };
 
-export default async function Page(props: { params: Promise<{ id: string }> }) {
-    const params = await props.params;
-    const id = params.id;
-    const [invoice, customers] = await Promise.all([
-        fetchInvoiceById(id),
-        fetchCustomers(),
-      ]);
+export default async function Page(props: { params: { id: string } }) {
+  const { id } = props.params;
+  const intervenant = await fetchIntervenantById(id);
 
-      if (!invoice) {
-        notFound();
-      }
-      
+  if (!intervenant) {
+    notFound();
+  }
+
   return (
     <main>
       <Breadcrumbs
         breadcrumbs={[
-          { label: 'Invoices', href: '/dashboard/invoices' },
+          { label: 'Intervenants', href: '/dashboard/intervenants' },
           {
-            label: 'Edit Invoice',
-            href: `/dashboard/invoices/${id}/edit`,
+            label: 'Modifier un intervenant',
+            href: `/dashboard/intervenants/${id}/edit`,
             active: true,
           },
         ]}
       />
-      <Form invoice={invoice} customers={customers} />
+      <EditIntervenantForm intervenant={intervenant} />
     </main>
   );
 }

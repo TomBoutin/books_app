@@ -9,7 +9,7 @@ export default async function fetchAllIntervenant(): Promise<Intervenant[]> {
         const client = await db.connect();
         console.log('connected');
 
-        const result = await client.query('SELECT * FROM public.intervenants ORDER BY id ASC');
+        const result = await client.query('SELECT * FROM public.intervenants ORDER BY id DESC');
         const data = result.rows as Intervenant[];
         console.log('Données :', data);
 
@@ -34,7 +34,7 @@ export async function fetchFilteredIntervenant(query: string, currentPage: numbe
         firstname ILIKE $1 OR
         lastname ILIKE $1 OR
         email ILIKE $1
-      ORDER BY id ASC
+      ORDER BY id DESC
       LIMIT $2 OFFSET $3
     `, [`%${query}%`, ITEMS_PER_PAGE, offset]);
     const data = result.rows as Intervenant[];
@@ -64,5 +64,18 @@ export async function fetchIntervenantPages(query: string): Promise<number> {
     } catch (err) {
       console.error('Database Error:', err);
       throw new Error('Erreur lors de la récupération des intervenants.');
+    }
+  }
+
+  export async function fetchIntervenantById(id: string) {
+    try {
+      const client = await db.connect();
+      const result = await client.query('SELECT * FROM public.intervenants WHERE id = $1', [id]);
+      const data = result.rows[0] as Intervenant;
+      client.release();
+      return data;
+    } catch (err) {
+      console.error('Database Error:', err);
+      throw new Error('Erreur lors de la récupération de l\'intervenant.');
     }
   }
