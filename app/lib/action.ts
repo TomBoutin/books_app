@@ -6,6 +6,9 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
+import { signIn } from '@/auth';
+import { AuthError } from 'next-auth';
+import bcrypt from 'bcrypt';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -195,3 +198,36 @@ export async function regenerateAllKeys(): Promise<void> {
         throw err;
     }
 }
+
+export async function authenticate(
+    prevState: string | undefined,
+    formData: FormData,
+  ) {
+    try {
+      await signIn('credentials', formData);
+    } catch (error) {
+      if (error instanceof AuthError) {
+        switch (error.type) {
+          case 'CredentialsSignin':
+            return 'Email ou mot de passe incorrect.';
+          default:
+            return 'Une erreur est survenue.';
+        }
+      }
+      throw error;
+    }
+  }
+//   export async function createUser(email: string, password: string, name?: string): Promise<void> {
+//     const hashedPassword = await bcrypt.hash(password, 10); // Chiffre le mot de passe avec un coût de 10
+//     try {
+//       const client = await db.connect();
+//       await client.query(
+//         'INSERT INTO public.users (email, password) VALUES ($1, $2)',
+//         [email, hashedPassword]
+//       );
+//       client.release();
+//     } catch (error) {
+//       console.error('Failed to create user:', error);
+//       throw new Error('Failed to create user.');
+//     }
+//   }
