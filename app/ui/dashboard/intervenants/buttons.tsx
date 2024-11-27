@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { PencilIcon, PlusIcon, TrashIcon, KeyIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon, TrashIcon, KeyIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { deleteIntervenant, regenerateKey } from '@/app/lib/action';
-import Modal from '@/app/ui/dashboard/intervenants/Modal';
+import { deleteIntervenant, regenerateKey, regenerateAllKeys } from '@/app/lib/action';
+import { ModalRegenerateKey, ModalRegenerateAllKey } from '@/app/ui/dashboard/intervenants/Modal';
+
 
 export function CreateIntervenant() {
   return (
@@ -60,7 +61,29 @@ export function RegenerateKey({ id }: { id: number }) {
         <span className="sr-only">Regenerate Key</span>
         <KeyIcon className="w-4" />
       </button>
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} onConfirm={handleConfirm} />
+      <ModalRegenerateKey isOpen={isModalOpen} onClose={handleCloseModal} onConfirm={handleConfirm} />
+    </>
+  );
+}
+
+export function RegenerateAllKey() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+
+  const handleConfirm = () => {
+    const RegenerateAllKey = regenerateAllKeys.bind(null);
+    RegenerateAllKey();
+    setIsModalOpen(false);
+  };
+  return (
+    <>
+      <button className="flex gap-3 mt-4 h-10 items-center rounded-lg bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" onClick={handleOpenModal} >
+        <span className="">Regénérer les clés</span>
+        <ArrowPathRoundedSquareIcon className="w-4" />
+      </button>
+      <ModalRegenerateAllKey isOpen={isModalOpen} onClose={handleCloseModal} onConfirm={handleConfirm} />
     </>
   );
 }

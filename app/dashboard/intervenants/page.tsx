@@ -3,6 +3,7 @@ import Table from "@/app/ui/dashboard/intervenants/table";
 import Pagination from "@/app/ui/dashboard/intervenants/pagination";
 import Search from "@/app/ui/dashboard/intervenants/search";
 import { CreateIntervenant } from '@/app/ui/dashboard/intervenants/buttons';
+import { RegenerateAllKey } from "@/app/ui/dashboard/intervenants/buttons";
 
 export default async function Page({
   searchParams,
@@ -26,6 +27,7 @@ export default async function Page({
         <Search placeholder="Chercher des intervenants..." />
         <CreateIntervenant />
       </div>
+      <RegenerateAllKey />
       <Table query={query} currentPage={currentPage} />
       <div className="mt-5 flex w-full justify-center">
         <Pagination totalPages={totalPages} />
