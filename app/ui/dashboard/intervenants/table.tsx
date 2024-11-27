@@ -2,6 +2,7 @@ import { fetchFilteredIntervenant } from "@/app/lib/data";
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { format, isBefore } from 'date-fns';
 import { DeleteIntervenant, UpdateIntervenant } from './buttons';
+import CopyToClipboard from '@/app/ui/dashboard/intervenants/CopyToClipboard';
 
 export default async function IntervenantTable({
     query,
@@ -46,6 +47,9 @@ export default async function IntervenantTable({
                   Email
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
+                  Clé
+                </th>
+                <th scope="col" className="px-3 py-5 font-medium">
                   Validité de la clé
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium text-end">
@@ -69,6 +73,9 @@ export default async function IntervenantTable({
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {intervenant.email}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3">
+                    <CopyToClipboard text={intervenant.key} />
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     <div className="flex items-center gap-2">
