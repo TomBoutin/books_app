@@ -1,7 +1,7 @@
 import { fetchFilteredIntervenant } from "@/app/lib/data";
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { format, isBefore } from 'date-fns';
-import { DeleteIntervenant, UpdateIntervenant } from './buttons';
+import { DeleteIntervenant, UpdateIntervenant, RegenerateKey } from './buttons';
 import CopyToClipboard from '@/app/ui/dashboard/intervenants/CopyToClipboard';
 
 export default async function IntervenantTable({
@@ -89,6 +89,7 @@ export default async function IntervenantTable({
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">
+                      <RegenerateKey id={intervenant.id} />
                       <UpdateIntervenant id={intervenant.id} />
                       <DeleteIntervenant id={intervenant.id} /> 
                     </div>

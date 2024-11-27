@@ -156,3 +156,19 @@ export async function deleteIntervenant(id: number): Promise<void> {
     }
 }
 
+export async function regenerateKey(id: number): Promise<void> {
+    const key = uuidv4();
+    const date = new Date().toISOString().split('T')[0];
+    const enddate = new Date();
+    enddate.setMonth(enddate.getMonth() + 2);
+    const enddateString = enddate.toISOString().split('T')[0];
+    try {
+        const client = await db.connect();
+        await client.query('UPDATE public.intervenants SET key = $1, creationdate = $2, enddate = $3 WHERE id = $4', [key, date, enddateString, id]);
+        revalidatePath('/dashboard/intervenants');
+        client.release();
+    } catch (err) {
+        console.error(err);
+        throw err;
+    }
+}

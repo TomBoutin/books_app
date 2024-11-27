@@ -1,6 +1,10 @@
-import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+'use client';
+
+import { useState } from 'react';
+import { PencilIcon, PlusIcon, TrashIcon, KeyIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { deleteIntervenant } from '@/app/lib/action';
+import { deleteIntervenant, regenerateKey } from '@/app/lib/action';
+import Modal from '@/app/ui/dashboard/intervenants/Modal';
 
 export function CreateIntervenant() {
   return (
@@ -20,7 +24,7 @@ export function UpdateIntervenant({ id }: { id: number }) {
     href={`/dashboard/intervenants/${id}/edit`}
     className="rounded-md border p-2 hover:bg-gray-100"
     >
-      <PencilIcon className="w-5" />
+      <PencilIcon className="w-4" />
     </Link>
   );
 }
@@ -35,5 +39,28 @@ export function DeleteIntervenant({ id }: { id: number }) {
         <TrashIcon className="w-4" />
       </button>
     </form>
+  );
+}
+
+export function RegenerateKey({ id }: { id: number }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+
+  const handleConfirm = () => {
+    const RegenerateKeyWithId = regenerateKey.bind(null, id);
+    RegenerateKeyWithId();
+    setIsModalOpen(false);
+  };
+
+  return (
+    <>
+      <button onClick={handleOpenModal} className="rounded-md border p-2 hover:bg-gray-100">
+        <span className="sr-only">Regenerate Key</span>
+        <KeyIcon className="w-4" />
+      </button>
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} onConfirm={handleConfirm} />
+    </>
   );
 }
