@@ -1,7 +1,8 @@
 import LoginForm from '@/app/ui/login-form';
-import bcrypt from 'bcrypt';
+// import bcrypt from 'bcrypt';
  
-export default async function LoginPage() {
+export default function LoginPage() {
+// export default async function LoginPage() {
 
   // const password = 'drowssap';
   // const hashedPassword = await bcrypt.hash(password, 10);
