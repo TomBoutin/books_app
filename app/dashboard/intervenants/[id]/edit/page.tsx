@@ -5,7 +5,7 @@ import EditIntervenantForm from '@/app/ui/dashboard/intervenants/edit-form';
 import { fetchIntervenantById } from '@/app/lib/data';
 
 export const metadata: Metadata = {
-  title: 'Edit Invoice',
+  title: 'Modifier un intervenant',
 };
 
 export default async function Page(props: { params: { id: string } }) {

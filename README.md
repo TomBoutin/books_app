@@ -9,3 +9,4 @@
 - Itération 8 : Création de la page Gestion des intervenants - régénérer la clé
 - Itération 9 : [BDD] Ajout des administrateurs
 - Itération 10 : Protection de l'accès au dashboard d’administration
+- Itération 11 : Accès par clé

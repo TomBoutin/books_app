@@ -79,3 +79,16 @@ export async function fetchIntervenantPages(query: string): Promise<number> {
       throw new Error('Erreur lors de la récupération de l\'intervenant.');
     }
   }
+
+  export async function fetchIntervenantByKey(key:string) {
+    try {
+      const client = await db.connect();
+      const result = await client.query('SELECT * FROM public.intervenants WHERE key = $1', [key]);
+      const data = result.rows[0] as Intervenant;
+      client.release();
+      return data;
+    } catch (err) {
+      console.error('Database Error:', err);
+      throw new Error('Erreur lors de la récupération de l\'intervenant.');
+    }
+  }
