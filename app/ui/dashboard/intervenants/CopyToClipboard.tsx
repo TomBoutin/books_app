@@ -8,7 +8,8 @@ export default function CopyToClipboard({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(text).then(() => {
+    const url = `${process.env.NEXT_PUBLIC_URL_PATH}/availability/${text}`;
+    navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 3000); // Reset after 3 seconds
     });
@@ -24,7 +25,7 @@ export default function CopyToClipboard({ text }: { text: string }) {
           <DocumentDuplicateIcon className="w-5 h-5 text-gray-500" />
         )}
       </button>
-      {copied && <Toast message="Clé copiée dans le presse-papier" />}
+      {copied && <Toast message="Lien d'accès avec la clé copié dans le presse papier" />}
     </>
   );
 }
