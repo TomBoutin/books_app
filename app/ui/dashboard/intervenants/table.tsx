@@ -14,7 +14,7 @@ export default async function IntervenantTable({
     const Intervenant = await fetchFilteredIntervenant(query, currentPage);
 
   return (
-    <div className="mt-6 flow-root">
+    <div className="mt-6 flow-root overflow-visible">
       <div className="inline-block min-w-full align-middle">
         <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
           <div className="md:hidden">

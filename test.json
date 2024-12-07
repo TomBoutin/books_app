@@ -1,0 +1,76 @@
+{
+    "default": [{
+        "days": "lundi, vendredi",
+        "from": "8:00",
+        "to": "9:30"
+    }, {
+        "days": "lundi, mardi, mercredi",
+        "from": "18:00",
+        "to": "19:30"
+    }, {
+        "days": "vendredi",
+        "from": "17:00",
+        "to": "19:30"
+    }],
+    "S45": [
+        {
+            "days": "mardi, mercredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S46": [
+        {
+            "days": "mardi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S47": [
+        {
+            "days": "mardi",
+            "from": "8:00",
+            "to": "18:00"
+        },
+        {
+            "days": "mercredi",
+            "from": "8:00",
+            "to": "13:00"
+        }
+    ],
+    "S48": [
+        {
+            "days": "mercredi, vendredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S49": [
+        {
+            "days": "mercredi, vendredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S50": [
+        {
+            "days": "mardi, mercredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S2": [
+        {
+            "days": "jeeudi",
+            "from": "8:00",
+            "to": "11:00"
+        }
+    ],
+    "S3": [
+        {
+            "days": "jeeudi",
+            "from": "8:00",
+            "to": "11:00"
+        }
+    ]
+}

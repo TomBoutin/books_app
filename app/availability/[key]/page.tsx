@@ -29,8 +29,12 @@ export default async function Page(props: { params: { key: string } }) {
 
   return (
     <main className="h-full min-h-dvh p-10">
-      <h2 className="text-xl font-semibold">Bonjour {intervenant.firstname} {intervenant.lastname}</h2>
-      <Calendar />
+      <div className='fixed top-2 bottom-2 left-2 max-w-60 w-full bg-slate-200 rounded-2xl'>
+      </div>
+      <div className='ml-60'>
+        <h2 className="text-xl font-semibold">Bonjour {intervenant.firstname} {intervenant.lastname}</h2>
+        <Calendar availability={intervenant.availability} />
+      </div>
     </main>
   );
 }
