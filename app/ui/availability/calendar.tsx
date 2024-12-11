@@ -5,81 +5,8 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
-import { format, startOfWeek, endOfWeek, parse, addDays, addMinutes, startOfYear, eachWeekOfInterval } from 'date-fns';
+import { format, startOfWeek, endOfWeek, parse, addDays, addMinutes, startOfYear, eachWeekOfInterval, addYears } from 'date-fns';
 import { fr } from 'date-fns/locale';
-
-// {
-  // "default": [{
-  //   "days": "lundi, mercredi, jeudi, vendredi",
-  //   "from": "9:00",
-  //   "to": "12:30"
-  // }, {
-  //   "days": "lundi, mercredi, jeudi, vendredi",
-  //   "from": "13:30",
-  //   "to": "18:00"
-  // }],
-//   "S45": [
-//     {
-//       "days": "mardi, mercredi",
-//       "from": "8:00",
-//       "to": "19:30"
-//     }
-//   ],
-//   "S46": [
-//     {
-//       "days": "mardi",
-//       "from": "8:00",
-//       "to": "19:30"
-//     }
-//   ],
-//   "S47": [
-//     {
-//       "days": "mardi",
-//       "from": "8:00",
-//       "to": "18:00"
-//     },
-//     {
-//       "days": "mercredi",
-//       "from": "8:00",
-//       "to": "13:00"
-//     }
-//   ],
-//   "S48": [
-//     {
-//       "days": "mercredi, vendredi",
-//       "from": "8:00",
-//       "to": "19:30"
-//     }
-//   ],
-//   "S49": [
-//     {
-//       "days": "mercredi, vendredi",
-//       "from": "8:00",
-//       "to": "19:30"
-//     }
-//   ],
-//   "S50": [
-//     {
-//       "days": "mardi, mercredi",
-//       "from": "8:00",
-//       "to": "19:30"
-//     }
-//   ],
-//   "S2": [
-//     {
-//       "days": "jeeudi",
-//       "from": "8:00",
-//       "to": "11:00"
-//     }
-//   ],
-//   "S3": [
-//     {
-//       "days": "jeeudi",
-//       "from": "8:00",
-//       "to": "11:00"
-//     }
-//   ]
-// }
 
 export default function Calendar({ availability } : { availability: any }) {
   const calendarRef = useRef<FullCalendar | null>(null);
@@ -100,10 +27,9 @@ export default function Calendar({ availability } : { availability: any }) {
     
     const currentYear = new Date().getFullYear();
     const startOfYearDate = startOfYear(new Date(currentYear, 0, 1));
-    const endOfYearDate = new Date(currentYear, 11, 31);
+    const endOfYearDate = addYears(startOfYearDate, 5);
     const allWeeks = eachWeekOfInterval({ start: startOfYearDate, end: endOfYearDate }, { weekStartsOn: 1 });
   
-    // Ajouter les disponibilités par défaut pour les semaines sans disponibilité spéciale
     for (const weekStart of allWeeks) {
       const weekNumber = format(weekStart, 'I'); 
       if (!availability[`S${weekNumber}`] && availability.default !== null) {
@@ -111,17 +37,15 @@ export default function Calendar({ availability } : { availability: any }) {
       }
     }
   
-    // transformer les disponibilités en événements
     for (const [week, weekAvailability] of Object.entries(availability)) {
-      if (week === 'default') continue; // Skip la disponibilité par défaut
+      if (week === 'default') continue;
       const weekStart = allWeeks.find(w => format(w, 'I') === week.replace('S', ''));
-      if (!weekStart) continue; // Skip si la semaine n'existe pas
+      if (!weekStart) continue;
 
-      // Supprimer les événements de la semaine actuelle
       events = events.filter(event => event.groupId !== week);
   
-      for (const availability of weekAvailability) {
-        if (!availability.days) continue; // Vérifier si les jours sont définis
+      for (const availability of weekAvailability as { days: string; from: string; to: string }[]) {
+        if (!availability.days) continue;
         const days = availability.days.split(', ');
         const from = parse(availability.from, 'HH:mm', new Date());
         const to = parse(availability.to, 'HH:mm', new Date());
@@ -184,7 +108,7 @@ export default function Calendar({ availability } : { availability: any }) {
   }
 
   function getWeekRange(date: Date) {
-    const start = startOfWeek(date, { weekStartsOn: 1 }); // Assuming week starts on Monday
+    const start = startOfWeek(date, { weekStartsOn: 1 });
     const end = endOfWeek(date, { weekStartsOn: 1 });
     return { start, end };
   }
@@ -206,15 +130,20 @@ export default function Calendar({ availability } : { availability: any }) {
     }
   }
 
+  function getWeekNumber(date: Date) {
+    return format(date, 'I', { locale: fr });
+  }
+
   return (
     <div>
       <div className='flex items-center gap-2'>
         <button onClick={Today}>Aujourd'hui</button>
         <button onClick={goBack}><ChevronLeftIcon className='w-6 h-6' /></button>
         <button onClick={goNext}><ChevronRightIcon className='w-6 h-6' /></button>
-        <p className='capitalize'>
+        <p className='capitalize text-xl'>
           {formatWeekRange(currentDate)}
         </p>
+        <p>Semaine {getWeekNumber(currentDate)}</p>
       </div>
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin]}
@@ -229,6 +158,19 @@ export default function Calendar({ availability } : { availability: any }) {
         }}
         locale={'fr'}
         datesSet={handleDatesSet}
+        allDaySlot={false}
+        selectable={true}
+        dayHeaderContent={(args) => {
+          const date = new Date(args.date);
+          const day = date.toLocaleDateString("fr-FR", { weekday: "short" });
+          const dayNumber = date.getDate();
+          return (
+            <div className="flex flex-col text-center">
+              <div className="capitalize text-sm font-semibold text-muted-foreground">{day}</div>
+              <div className={`text-xl font-semibold text-foreground`}>{dayNumber}</div>
+            </div>
+          );
+        }}
       />
     </div>
   );

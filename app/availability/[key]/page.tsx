@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { fetchIntervenantByKey } from '@/app/lib/data';
-import Calendar from '@/app/ui/calendar';
+import Calendar from '@/app/ui/availability/calendar';
 
 export const metadata: Metadata = {
   title: 'Accueil',
@@ -28,10 +28,11 @@ export default async function Page(props: { params: { key: string } }) {
   }
 
   return (
-    <main className="h-full min-h-dvh p-10">
-      <div className='fixed top-2 bottom-2 left-2 max-w-60 w-full bg-slate-200 rounded-2xl'>
+    <main className="h-full min-h-dvh flex">
+      <div className='max-w-60 w-full bg-slate-200 px-3 pt-5 sidenav'>
+        <h2 className='py-2'>Logo</h2>
       </div>
-      <div className='ml-60'>
+      <div className='w-full mt-5 mx-5'>
         <h2 className="text-xl font-semibold">Bonjour {intervenant.firstname} {intervenant.lastname}</h2>
         <Calendar availability={intervenant.availability} />
       </div>
