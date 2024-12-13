@@ -1,16 +1,8 @@
 {
     "default": [{
-        "days": "lundi, vendredi",
+        "days": "lundi, mardi, mercredi, jeudi, vendredi",
         "from": "8:00",
-        "to": "9:30"
-    }, {
-        "days": "lundi, mardi, mercredi",
-        "from": "18:00",
-        "to": "19:30"
-    }, {
-        "days": "vendredi",
-        "from": "17:00",
-        "to": "19:30"
+        "to": "18:30"
     }],
     "S45": [
         {
@@ -74,3 +66,4 @@
         }
     ]
 }
+
