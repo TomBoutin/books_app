@@ -4,18 +4,59 @@ import { useRef, useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction'; // Import the interaction plugin
 import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 import moment from 'moment';
 import 'moment/locale/fr'; // Assurez-vous d'importer la localisation française pour moment.js
+import { updateAvailability } from '@/app/lib/action';
 
 moment.locale('fr');
 
-export default function Calendar({ availability }: { availability: any }) {
+export default function Calendar({ availability, intervenantId }: { availability: any, intervenantId: number }) {
   const calendarRef = useRef<FullCalendar | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<
     { title: string; start: string; end?: string; url?: string; groupId?: string }[]
   >([]);
+
+  // Function to handle selecting a time range
+  const handleSelect = async (selectInfo: any) => {
+    const { start, end } = selectInfo;
+    const newEvent = {
+      title: 'Disponible',
+      start: start.toISOString(),
+      end: end.toISOString(),
+    };
+
+    // Add the new event to the calendar
+    setEvents((prevEvents) => [...prevEvents, newEvent]);
+
+    // Determine the week key
+    const weekStart = moment(start).startOf('isoWeek');
+    const isoWeekNumber = weekStart.isoWeek();
+    const isoYear = weekStart.isoWeekYear();
+    const weekKey = `S${isoWeekNumber}`;
+
+    // Parse the availability
+    let parsedAvailability = JSON.parse(availability);
+
+    // Check if the week has specific availability or uses default
+    if (!parsedAvailability[weekKey] && parsedAvailability.default) {
+      // Clone the default availability for this week
+      parsedAvailability[weekKey] = [...parsedAvailability.default];
+    }
+
+    // Update the availability for the selected week
+    parsedAvailability[weekKey] = parsedAvailability[weekKey] || [];
+    parsedAvailability[weekKey].push({
+      days: moment(start).format('dddd'),
+      from: moment(start).format('HH:mm'),
+      to: moment(end).format('HH:mm'),
+    });
+
+    // Update the availability in the database
+    await updateAvailability(parsedAvailability, intervenantId);
+  };
 
   // Fonction pour transformer les disponibilités en événements
   function transformAvailabilityToEvents(availability: any) {
@@ -93,6 +134,7 @@ export default function Calendar({ availability }: { availability: any }) {
   // Gérer la navigation dans le calendrier
   function handleDatesSet(dateInfo: any) {
     setCurrentDate(dateInfo.start);
+    console.log(dateInfo);
   }
 
   function getWeekRange(date: Date) {
@@ -172,9 +214,10 @@ export default function Calendar({ availability }: { availability: any }) {
           </select>
       </div>
       <FullCalendar
-        plugins={[dayGridPlugin, timeGridPlugin]}
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"
         weekends={false}
+        selectable={true}
         events={events}
         ref={calendarRef}
         headerToolbar={{
@@ -185,7 +228,7 @@ export default function Calendar({ availability }: { availability: any }) {
         locale="fr"
         datesSet={handleDatesSet}
         allDaySlot={false}
-        selectable={true}
+        select={handleSelect}
         dayHeaderContent={(args) => {
           const date = new Date(args.date);
           const day = date.toLocaleDateString('fr-FR', { weekday: 'short' });

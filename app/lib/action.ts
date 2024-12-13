@@ -231,3 +231,21 @@ export async function authenticate(
 //       throw new Error('Failed to create user.');
 //     }
 //   }
+
+export async function updateAvailability(newEvent: { title: string; start: string; end?: string }, intervenantId: number) {
+    try {
+      const client = await db.connect();
+      const { start, end } = newEvent;
+  
+      // Replace the entire column of availability for the intervenant
+      await client.query(
+        'UPDATE public.intervenants SET availability = $1 WHERE id = $2',
+        [JSON.stringify(newEvent), intervenantId]
+      );
+  
+      client.release();
+    } catch (err) {
+      console.error('Database Error:', err);
+      throw new Error('Erreur lors de la mise à jour des disponibilités.');
+    }
+  }

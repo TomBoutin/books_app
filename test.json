@@ -1,9 +1,11 @@
 {
-    "default": [{
-        "days": "lundi, mardi, mercredi, jeudi, vendredi",
-        "from": "8:00",
-        "to": "18:30"
-    }],
+    "default": [
+        {
+            "days": "lundi, mardi, mercredi, jeudi, vendredi",
+            "from": "8:00",
+            "to": "18:30"
+        }
+    ],
     "S45": [
         {
             "days": "mardi, mercredi",
@@ -67,3 +69,107 @@
     ]
 }
 
+
+
+{
+    "default": [
+        {
+            "days": "lundi, mardi, mercredi, jeudi, vendredi",
+            "from": "8:00",
+            "to": "18:30"
+        }
+    ],
+    "S45": [
+        {
+            "days": "mardi, mercredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S46": [
+        {
+            "days": "mardi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S47": [
+        {
+            "days": "mardi",
+            "from": "8:00",
+            "to": "18:00"
+        },
+        {
+            "days": "mercredi",
+            "from": "8:00",
+            "to": "13:00"
+        }
+    ],
+    "S48": [
+        {
+            "days": "mercredi, vendredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S49": [
+        {
+            "days": "mercredi, vendredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S50": [
+        {
+            "days": "mardi, mercredi",
+            "from": "8:00",
+            "to": "19:30"
+        },
+        {
+            "days": "vendredi",
+            "from": "07:30",
+            "to": "12:00"
+        },
+        {
+            "days": "jeudi",
+            "from": "07:30",
+            "to": "12:00"
+        },
+        {
+            "days": "vendredi",
+            "from": "09:30",
+            "to": "13:00"
+        }
+    ],
+    "S2": [
+        {
+            "days": "jeudi",
+            "from": "8:00",
+            "to": "11:00"
+        }
+    ],
+    "S3": [
+        {
+            "days": "jeudi",
+            "from": "8:00",
+            "to": "11:00"
+        }
+    ],
+    "S51": [
+        {
+            "days": "lundi, mardi, mercredi, jeudi, vendredi",
+            "from": "8:00",
+            "to": "18:30"
+        },
+        {
+            "days": "jeudi",
+            "from": "07:30",
+            "to": "11:00"
+        },
+        {
+            "days": "mardi",
+            "from": "06:30",
+            "to": "08:00"
+        }
+    ]
+}
