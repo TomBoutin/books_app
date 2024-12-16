@@ -191,7 +191,7 @@ import { updateAvailability } from '@/app/lib/action';
 
 moment.locale('fr');
 
-export default function Calendar({ availability, intervenantId }: { availability: any, intervenantId: number }) {
+export default function Calendar({ availability, intervenantId, key }: { availability: any, intervenantId: number, key: string }) {
   const calendarRef = useRef<FullCalendar | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<
@@ -220,18 +220,18 @@ export default function Calendar({ availability, intervenantId }: { availability
       // Clone the default availability for this week
       parsedAvailability[weekKey] = [...parsedAvailability.default];
     }
-  
+    
     // Update the availability for the selected week
     parsedAvailability[weekKey] = parsedAvailability[weekKey] || [];
-    parsedAvailability[weekKey].push({
+    parsedAvailability[weekKey] = parsedAvailability[weekKey].concat({
       days: moment(start).format('dddd'),
       from: moment(start).format('HH:mm'),
       to: moment(end).format('HH:mm'),
     });
-  
+    
     // Update the availability in the database
-    await updateAvailability(parsedAvailability, intervenantId);
-  
+    await updateAvailability(parsedAvailability, intervenantId, key);
+    
     // Reload events after adding the new event
     const newEvents = transformAvailabilityToEvents(JSON.stringify(parsedAvailability));
     setEvents(newEvents);

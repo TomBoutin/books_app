@@ -232,7 +232,7 @@ export async function authenticate(
 //     }
 //   }
 
-export async function updateAvailability(newEvent: { title: string; start: string; end?: string }, intervenantId: number) {
+export async function updateAvailability(newEvent: { title: string; start: string; end?: string }, intervenantId: number, key: string) {
     try {
       const client = await db.connect();
       const { start, end } = newEvent;
@@ -243,6 +243,7 @@ export async function updateAvailability(newEvent: { title: string; start: strin
         [JSON.stringify(newEvent), intervenantId]
       );
   
+      revalidatePath(`/availability/${key}`);
       client.release();
     } catch (err) {
       console.error('Database Error:', err);

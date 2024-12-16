@@ -34,7 +34,7 @@ export default async function Page(props: { params: { key: string } }) {
       </div>
       <div className='w-full mt-5 mx-5'>
         <h2 className="text-xl font-semibold">Bonjour {intervenant.firstname} {intervenant.lastname}</h2>
-        <Calendar availability={intervenant.availability} intervenantId={intervenant.id}/>
+        <Calendar availability={intervenant.availability} intervenantId={intervenant.id} key={intervenant.key}/>
       </div>
     </main>
   );
