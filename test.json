@@ -173,3 +173,13 @@
         }
     ]
 }
+
+// {
+//     "default": [
+//         {
+//             "days": "lundi, mardi, mercredi, jeudi, vendredi",
+//             "from": "8:00",
+//             "to": "18:30"
+//         }
+//     ]
+// }

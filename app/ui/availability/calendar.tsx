@@ -10,6 +10,185 @@ import moment from 'moment';
 import 'moment/locale/fr'; // Assurez-vous d'importer la localisation française pour moment.js
 import { updateAvailability } from '@/app/lib/action';
 
+
+{/*
+  {
+    "default": [
+        {
+            "days": "lundi, mardi, mercredi, jeudi, vendredi",
+            "from": "8:00",
+            "to": "18:30"
+        }
+    ],
+    "S45": [
+        {
+            "days": "mardi, mercredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S46": [
+        {
+            "days": "mardi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S47": [
+        {
+            "days": "mardi",
+            "from": "8:00",
+            "to": "18:00"
+        },
+        {
+            "days": "mercredi",
+            "from": "8:00",
+            "to": "13:00"
+        }
+    ],
+    "S48": [
+        {
+            "days": "mercredi, vendredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S49": [
+        {
+            "days": "mercredi, vendredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S50": [
+        {
+            "days": "mardi, mercredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S2": [
+        {
+            "days": "jeeudi",
+            "from": "8:00",
+            "to": "11:00"
+        }
+    ],
+    "S3": [
+        {
+            "days": "jeeudi",
+            "from": "8:00",
+            "to": "11:00"
+        }
+    ]
+}
+
+
+
+{
+    "default": [
+        {
+            "days": "lundi, mardi, mercredi, jeudi, vendredi",
+            "from": "8:00",
+            "to": "18:30"
+        }
+    ],
+    "S45": [
+        {
+            "days": "mardi, mercredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S46": [
+        {
+            "days": "mardi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S47": [
+        {
+            "days": "mardi",
+            "from": "8:00",
+            "to": "18:00"
+        },
+        {
+            "days": "mercredi",
+            "from": "8:00",
+            "to": "13:00"
+        }
+    ],
+    "S48": [
+        {
+            "days": "mercredi, vendredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S49": [
+        {
+            "days": "mercredi, vendredi",
+            "from": "8:00",
+            "to": "19:30"
+        }
+    ],
+    "S50": [
+        {
+            "days": "mardi, mercredi",
+            "from": "8:00",
+            "to": "19:30"
+        },
+        {
+            "days": "vendredi",
+            "from": "07:30",
+            "to": "12:00"
+        },
+        {
+            "days": "jeudi",
+            "from": "07:30",
+            "to": "12:00"
+        },
+        {
+            "days": "vendredi",
+            "from": "09:30",
+            "to": "13:00"
+        }
+    ],
+    "S2": [
+        {
+            "days": "jeudi",
+            "from": "8:00",
+            "to": "11:00"
+        }
+    ],
+    "S3": [
+        {
+            "days": "jeudi",
+            "from": "8:00",
+            "to": "11:00"
+        }
+    ],
+    "S51": [
+        {
+            "days": "lundi, mardi, mercredi, jeudi, vendredi",
+            "from": "8:00",
+            "to": "18:30"
+        },
+        {
+            "days": "jeudi",
+            "from": "07:30",
+            "to": "11:00"
+        },
+        {
+            "days": "mardi",
+            "from": "06:30",
+            "to": "08:00"
+        }
+    ]
+}
+  */}
+
 moment.locale('fr');
 
 export default function Calendar({ availability, intervenantId }: { availability: any, intervenantId: number }) {
@@ -19,33 +198,29 @@ export default function Calendar({ availability, intervenantId }: { availability
     { title: string; start: string; end?: string; url?: string; groupId?: string }[]
   >([]);
 
-  // Function to handle selecting a time range
   const handleSelect = async (selectInfo: any) => {
     const { start, end } = selectInfo;
     const newEvent = {
       title: 'Disponible',
       start: start.toISOString(),
       end: end.toISOString(),
+      groupId: 'available',
+      classNames: ['bg-primary', 'border-primary'],
     };
-
-    // Add the new event to the calendar
-    setEvents((prevEvents) => [...prevEvents, newEvent]);
-
+  
+    let parsedAvailability = JSON.parse(availability);
+  
     // Determine the week key
     const weekStart = moment(start).startOf('isoWeek');
     const isoWeekNumber = weekStart.isoWeek();
-    const isoYear = weekStart.isoWeekYear();
     const weekKey = `S${isoWeekNumber}`;
-
-    // Parse the availability
-    let parsedAvailability = JSON.parse(availability);
-
+  
     // Check if the week has specific availability or uses default
     if (!parsedAvailability[weekKey] && parsedAvailability.default) {
       // Clone the default availability for this week
       parsedAvailability[weekKey] = [...parsedAvailability.default];
     }
-
+  
     // Update the availability for the selected week
     parsedAvailability[weekKey] = parsedAvailability[weekKey] || [];
     parsedAvailability[weekKey].push({
@@ -53,14 +228,18 @@ export default function Calendar({ availability, intervenantId }: { availability
       from: moment(start).format('HH:mm'),
       to: moment(end).format('HH:mm'),
     });
-
+  
     // Update the availability in the database
     await updateAvailability(parsedAvailability, intervenantId);
+  
+    // Reload events after adding the new event
+    const newEvents = transformAvailabilityToEvents(JSON.stringify(parsedAvailability));
+    setEvents(newEvents);
   };
 
   // Fonction pour transformer les disponibilités en événements
   function transformAvailabilityToEvents(availability: any) {
-    let events: { title: string; start: string; end: string; groupId?: string }[] = [];
+    let events: { title: string; start: string; end: string; groupId?: string; classNames?: string[] }[] = [];
     const daysOfWeek = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
   
     availability = JSON.parse(availability);
@@ -114,6 +293,7 @@ export default function Calendar({ availability, intervenantId }: { availability
               start: startTime.toISOString(),
               end: endTime.toISOString(),
               groupId: `${isoYear}-W${isoWeekNumber}`,
+              classNames: availability.default.includes(avail) ? ['bg-blue-500 border-blue-500'] : ['bg-primary border-primary'],
             });
           });
         }

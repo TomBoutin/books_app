@@ -92,3 +92,17 @@ export async function fetchIntervenantPages(query: string): Promise<number> {
       throw new Error('Erreur lors de la récupération de l\'intervenant.');
     }
   }
+
+
+    export async function fetchAvailability(intervenantId: number): Promise<string> {
+    try {
+      const client = await db.connect();
+      const result = await client.query('SELECT availability FROM public.intervenants WHERE id = $1', [intervenantId]);
+      const availability = result.rows[0].availability;
+      client.release();
+      return availability;
+    } catch (err) {
+      console.error('Database Error:', err);
+      throw new Error('Erreur lors de la récupération des disponibilités.');
+    }
+  }
