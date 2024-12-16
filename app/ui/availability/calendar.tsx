@@ -126,13 +126,7 @@ import { updateAvailability } from '@/app/lib/action';
             "to": "19:30"
         }
     ],
-    "S49": [
-        {
-            "days": "mercredi, vendredi",
-            "from": "8:00",
-            "to": "19:30"
-        }
-    ],
+    "S49": [null],
     "S50": [
         {
             "days": "mardi, mercredi",
@@ -217,7 +211,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
 
     // Add the new event to the availability
     parsedAvailability[weekKey] = parsedAvailability[weekKey] || [];
-    parsedAvailability[weekKey].push({
+    parsedAvailability[weekKey] = parsedAvailability[weekKey].concat({
       days: moment(start).format('dddd'),
       from: moment(start).format('HH:mm'),
       to: moment(end).format('HH:mm'),
@@ -236,20 +230,20 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     const weekStart = moment(event.start).startOf('isoWeek');
     const isoWeekNumber = weekStart.isoWeek();
     const weekKey = `S${isoWeekNumber}`;
-
+  
     // Find and remove the event from the availability
     parsedAvailability[weekKey] = parsedAvailability[weekKey].filter((avail: any) => {
       return !(avail.days === moment(event.start).format('dddd') && avail.from === moment(event.start).format('HH:mm') && avail.to === moment(event.end).format('HH:mm'));
     });
-
-    // If the week has no more availability, remove the week key
+  
+    // If the week has no more availability, set the week key to null
     if (parsedAvailability[weekKey].length === 0) {
-      delete parsedAvailability[weekKey];
+      parsedAvailability[weekKey] = [];
     }
-
+  
     // Update the availability in the database
     await updateAvailability(parsedAvailability, intervenantId, key);
-
+  
     // Reload events after deleting the event
     const newEvents = transformAvailabilityToEvents(JSON.stringify(parsedAvailability));
     setEvents(newEvents);
@@ -276,23 +270,25 @@ export default function Calendar({ availability, intervenantId, key }: { availab
   
     // Appliquer les disponibilités par défaut pour les semaines non spécifiées
     allWeeks.forEach((weekStart) => {
-      const isoWeekNumber = weekStart.isoWeek(); // Numéro de semaine ISO
-      const isoYear = weekStart.isoWeekYear(); // Année ISO
-      const weekKey = `S${isoWeekNumber}`; // Exemple : S1, S45
-  
+      const isoWeekNumber = weekStart.isoWeek();
+      const isoYear = weekStart.isoWeekYear();
+      const weekKey = `S${isoWeekNumber}`;
+      
       if (!availability[weekKey] && availability.default) {
-        // Étendre la disponibilité par défaut à cette semaine si elle est définie
         availability[weekKey] = availability.default;
       }
-  
+      
       if (availability[weekKey]) {
+        // Filter out null values
+        availability[weekKey] = availability[weekKey].filter((avail: any) => avail !== null);
+      
         for (const avail of availability[weekKey] as { days: string; from: string; to: string }[]) {
           if (!avail.days) continue;
-  
+      
           const days = avail.days.split(', ');
           const from = moment(avail.from, 'HH:mm');
           const to = moment(avail.to, 'HH:mm');
-  
+      
           if (!from.isValid() || !to.isValid()) {
             console.error(`Invalid time range: ${avail.from} - ${avail.to}`);
             continue;
