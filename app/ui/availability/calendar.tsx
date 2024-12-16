@@ -5,7 +5,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction'; // Import the interaction plugin
-import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, ChevronLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
 import moment from 'moment';
 import 'moment/locale/fr'; // Assurez-vous d'importer la localisation française pour moment.js
 import { updateAvailability } from '@/app/lib/action';
@@ -214,25 +214,43 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     const weekStart = moment(start).startOf('isoWeek');
     const isoWeekNumber = weekStart.isoWeek();
     const weekKey = `S${isoWeekNumber}`;
-  
-    // Check if the week has specific availability or uses default
-    if (!parsedAvailability[weekKey] && parsedAvailability.default) {
-      // Clone the default availability for this week
-      parsedAvailability[weekKey] = [...parsedAvailability.default];
-    }
-    
-    // Update the availability for the selected week
+
+    // Add the new event to the availability
     parsedAvailability[weekKey] = parsedAvailability[weekKey] || [];
-    parsedAvailability[weekKey] = parsedAvailability[weekKey].concat({
+    parsedAvailability[weekKey].push({
       days: moment(start).format('dddd'),
       from: moment(start).format('HH:mm'),
       to: moment(end).format('HH:mm'),
     });
-    
+
     // Update the availability in the database
     await updateAvailability(parsedAvailability, intervenantId, key);
-    
+
     // Reload events after adding the new event
+    const newEvents = transformAvailabilityToEvents(JSON.stringify(parsedAvailability));
+    setEvents(newEvents);
+  };
+
+  const handleDelete = async (event: any) => {
+    let parsedAvailability = JSON.parse(availability);
+    const weekStart = moment(event.start).startOf('isoWeek');
+    const isoWeekNumber = weekStart.isoWeek();
+    const weekKey = `S${isoWeekNumber}`;
+
+    // Find and remove the event from the availability
+    parsedAvailability[weekKey] = parsedAvailability[weekKey].filter((avail: any) => {
+      return !(avail.days === moment(event.start).format('dddd') && avail.from === moment(event.start).format('HH:mm') && avail.to === moment(event.end).format('HH:mm'));
+    });
+
+    // If the week has no more availability, remove the week key
+    if (parsedAvailability[weekKey].length === 0) {
+      delete parsedAvailability[weekKey];
+    }
+
+    // Update the availability in the database
+    await updateAvailability(parsedAvailability, intervenantId, key);
+
+    // Reload events after deleting the event
     const newEvents = transformAvailabilityToEvents(JSON.stringify(parsedAvailability));
     setEvents(newEvents);
   };
@@ -374,6 +392,17 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     }
   }
 
+  const renderEventContent = (eventInfo: any) => {
+    return (
+      <div>
+        <span>{eventInfo.event.title}</span>
+        <button onClick={() => handleDelete(eventInfo.event)}>
+          <TrashIcon className="w-4 h-4 text-red-500" />
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div>
       <div className="flex items-center gap-2">
@@ -420,6 +449,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
             </div>
           );
         }}
+        eventContent={renderEventContent} 
       />
     </div>
   );
