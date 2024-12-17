@@ -5,10 +5,11 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction'; // Import the interaction plugin
-import { ChevronRightIcon, ChevronLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, ChevronLeftIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import moment from 'moment';
 import 'moment/locale/fr'; // Assurez-vous d'importer la localisation française pour moment.js
 import { updateAvailability } from '@/app/lib/action';
+
 
 
 {/*
@@ -231,20 +232,75 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     const isoWeekNumber = weekStart.isoWeek();
     const weekKey = `S${isoWeekNumber}`;
   
-    // Find and remove the event from the availability
-    parsedAvailability[weekKey] = parsedAvailability[weekKey].filter((avail: any) => {
-      return !(avail.days === moment(event.start).format('dddd') && avail.from === moment(event.start).format('HH:mm') && avail.to === moment(event.end).format('HH:mm'));
+    // Vérifiez si l'événement fait partie des disponibilités par défaut
+    const isDefaultAvailability = parsedAvailability.default.some((avail: any) => {
+      return (
+        avail.days === moment(event.start).format('dddd') &&
+        avail.from === moment(event.start).format('HH:mm') &&
+        avail.to === moment(event.end).format('HH:mm')
+      );
     });
   
-    // If the week has no more availability, set the week key to null
+    if (isDefaultAvailability) {
+      // Créez une nouvelle entrée pour la semaine actuelle avec les disponibilités par défaut
+      parsedAvailability[weekKey] = parsedAvailability.default.map((avail: any) => ({ ...avail }));
+    }
+  
+    // Supprimez l'événement de la disponibilité de la semaine actuelle
+    parsedAvailability[weekKey] = parsedAvailability[weekKey].filter((avail: any) => {
+      return !(
+        avail.days === moment(event.start).format('dddd') &&
+        avail.from === moment(event.start).format('HH:mm') &&
+        avail.to === moment(event.end).format('HH:mm')
+      );
+    });
+  
+    // Si la semaine n'a plus de disponibilités, définissez la clé de la semaine sur null
     if (parsedAvailability[weekKey].length === 0) {
       parsedAvailability[weekKey] = [];
     }
   
+    // Mettez à jour la disponibilité dans la base de données
+    await updateAvailability(parsedAvailability, intervenantId, key);
+  
+    // Rechargez les événements après la suppression de l'événement
+    const newEvents = transformAvailabilityToEvents(JSON.stringify(parsedAvailability));
+    setEvents(newEvents);
+  };
+
+  const resetWeekAvailability = async () => {
+    let parsedAvailability = JSON.parse(availability);
+    const weekStart = moment(currentDate).startOf('isoWeek');
+    const isoWeekNumber = weekStart.isoWeek();
+    const weekKey = `S${isoWeekNumber}`;
+  
+    // Reset the week availability to default
+    parsedAvailability[weekKey] = parsedAvailability.default.map((avail: any) => ({ ...avail }));
+  
+    // Remove the special availability entry for the current week
+    delete parsedAvailability[weekKey];
+  
     // Update the availability in the database
     await updateAvailability(parsedAvailability, intervenantId, key);
   
-    // Reload events after deleting the event
+    // Reload events after resetting the week
+    const newEvents = transformAvailabilityToEvents(JSON.stringify(parsedAvailability));
+    setEvents(newEvents);
+  };
+
+  const markWeekAsSpecial = async () => {
+    let parsedAvailability = JSON.parse(availability);
+    const weekStart = moment(currentDate).startOf('isoWeek');
+    const isoWeekNumber = weekStart.isoWeek();
+    const weekKey = `S${isoWeekNumber}`;
+
+    // Mark the week as special (empty)
+    parsedAvailability[weekKey] = [];
+
+    // Update the availability in the database
+    await updateAvailability(parsedAvailability, intervenantId, key);
+
+    // Reload events after marking the week as special
     const newEvents = transformAvailabilityToEvents(JSON.stringify(parsedAvailability));
     setEvents(newEvents);
   };
@@ -389,12 +445,22 @@ export default function Calendar({ availability, intervenantId, key }: { availab
   }
 
   const renderEventContent = (eventInfo: any) => {
+    const isDefaultAvailability = JSON.parse(availability).default.some((avail: any) => {
+      return (
+        avail.days.split(', ').includes(moment(eventInfo.event.start).format('dddd')) &&
+        avail.from === moment(eventInfo.event.start).format('HH:mm') &&
+        avail.to === moment(eventInfo.event.end).format('HH:mm')
+      );
+    });
+
     return (
       <div>
         <span>{eventInfo.event.title}</span>
-        <button onClick={() => handleDelete(eventInfo.event)}>
-          <TrashIcon className="w-4 h-4 text-red-500" />
-        </button>
+        {!isDefaultAvailability && (
+          <button onClick={() => handleDelete(eventInfo.event)}>
+            <TrashIcon className="w-4 h-4 text-red-500" />
+          </button>
+        )}
       </div>
     );
   };
@@ -413,11 +479,15 @@ export default function Calendar({ availability, intervenantId, key }: { availab
           {formatWeekRange(currentDate)}
         </p>
         <p>Semaine {getWeekNumber(currentDate)}</p>
-          <select onChange={(e) => changeView(e.target.value)} className="border border-gray-300 rounded-md p-2">
-            <option value="timeGridWeek">Semaine</option>
-            <option value="dayGridMonth">Mois</option>
-          </select>
+        <select onChange={(e) => changeView(e.target.value)} className="border border-gray-300 rounded-md p-2">
+          <option value="timeGridWeek">Semaine</option>
+          <option value="dayGridMonth">Mois</option>
+        </select>
       </div>
+        <div className=''>
+          <button onClick={resetWeekAvailability} className="bg-blue-500 text-white p-2 rounded-md"><ArrowPathIcon className='h-5 w-5' /></button>
+          <button onClick={markWeekAsSpecial} className="bg-red-500 text-white p-2 rounded-md"><TrashIcon className='w-5 h-5' /></button>
+        </div>
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"
