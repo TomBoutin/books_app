@@ -186,6 +186,13 @@ import { updateAvailability } from '@/app/lib/action';
 
 moment.locale('fr');
 
+interface Availability {
+  days: string;
+  from: string;
+  to: string;
+  id?: string;
+}
+
 export default function Calendar({ availability, intervenantId, key }: { availability: any, intervenantId: number, key: string }) {
   const calendarRef = useRef<FullCalendar | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -267,6 +274,50 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     setEvents(newEvents);
   };
 
+  const handleEventChange = async (changeInfo: any) => {
+    const { event } = changeInfo;
+    const { start, end } = event;
+  
+    let parsedAvailability = JSON.parse(availability);
+  
+    // Determine the week key for the original event
+    const originalWeekStart = moment(event._def.extendedProps.originalStart).startOf('isoWeek');
+    const originalIsoWeekNumber = originalWeekStart.isoWeek();
+    const originalWeekKey = `S${originalIsoWeekNumber}`;
+  
+    // Remove the original event from the availability
+    parsedAvailability[originalWeekKey] = parsedAvailability[originalWeekKey].filter((avail: any) => {
+      return !(avail.days === moment(event._def.extendedProps.originalStart).format('dddd') &&
+               avail.from === moment(event._def.extendedProps.originalStart).format('HH:mm') &&
+               avail.to === moment(event._def.extendedProps.originalEnd).format('HH:mm'));
+    });
+  
+    // If the original week has no more availability, remove the week key
+    if (parsedAvailability[originalWeekKey].length === 0) {
+      delete parsedAvailability[originalWeekKey];
+    }
+  
+    // Determine the week key for the updated event
+    const updatedWeekStart = moment(start).startOf('isoWeek');
+    const updatedIsoWeekNumber = updatedWeekStart.isoWeek();
+    const updatedWeekKey = `S${updatedIsoWeekNumber}`;
+  
+    // Add the updated event to the availability
+    parsedAvailability[updatedWeekKey] = parsedAvailability[updatedWeekKey] || [];
+    parsedAvailability[updatedWeekKey].push({
+      days: moment(start).format('dddd'),
+      from: moment(start).format('HH:mm'),
+      to: moment(end).format('HH:mm')
+    });
+  
+    // Update the availability in the database
+    await updateAvailability(parsedAvailability, intervenantId, key);
+  
+    // Reload events after updating the event
+    const newEvents = transformAvailabilityToEvents(JSON.stringify(parsedAvailability));
+    setEvents(newEvents);
+  };
+
   const resetWeekAvailability = async () => {
     let parsedAvailability = JSON.parse(availability);
     const weekStart = moment(currentDate).startOf('isoWeek');
@@ -304,41 +355,16 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     setEvents(newEvents);
   };
 
-  const handleEventChange = async (changeInfo: any) => {
-    const { event } = changeInfo;
-    const { start, end, id } = event;
-  
-    let parsedAvailability = JSON.parse(availability);
-  
-    // Determine the week key
-    const weekStart = moment(start).startOf('isoWeek');
-    const isoWeekNumber = weekStart.isoWeek();
-    const weekKey = `S${isoWeekNumber}`;
-  
-    // Find the specific event to update
-    const eventIndex = parsedAvailability[weekKey].findIndex((avail: any) => avail.id === id);
-    if (eventIndex !== -1) {
-      parsedAvailability[weekKey][eventIndex] = {
-        ...parsedAvailability[weekKey][eventIndex],
-        start: start.toISOString(),
-        end: end.toISOString(),
-      };
-  
-      // Update the availability in the database
-      await updateAvailability(parsedAvailability, intervenantId, key);
-  
-      // Reload events after updating the event
-      const newEvents = transformAvailabilityToEvents(JSON.stringify(parsedAvailability));
-      setEvents(newEvents);
-    }
-  };
+
 
   // Fonction pour transformer les disponibilités en événements
   function transformAvailabilityToEvents(availability: any) {
     let events: { id: string; title: string; start: string; end: string; classNames?: string[], isDefault?: boolean }[] = [];
     const daysOfWeek = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
   
-    availability = JSON.parse(availability);
+
+
+    availability = JSON.parse(availability) as { [key: string]: Availability[] };
   
     const currentYear = moment().year();
     const startDate = moment().startOf('year');
@@ -386,14 +412,19 @@ export default function Calendar({ availability, intervenantId, key }: { availab
             const startTime = start.clone().add(from.hours(), 'hours').add(from.minutes(), 'minutes');
             const endTime = start.clone().add(to.hours(), 'hours').add(to.minutes(), 'minutes');
   
+            const eventId = `${isoYear}-W${isoWeekNumber}-${day}-${from.format('HH:mm')}-${to.format('HH:mm')}-${Math.random().toString(36).substr(2, 9)}`;
+  
             events.push({
-              id: `${isoYear}-W${isoWeekNumber}-${day}-${from.format('HH:mm')}-${to.format('HH:mm')}-${Math.random().toString(36).substr(2, 9)}`, // Unique ID for each event
+              id: eventId, // Unique ID for each event
               title: 'Disponible',
               start: startTime.toISOString(),
               end: endTime.toISOString(),
               classNames: availability.default.includes(avail) ? ['bg-blue-500 border-blue-500 opacity-50'] : ['bg-primary border-primary'],
               isDefault: availability.default.includes(avail),
             });
+  
+            // Store the event ID in the availability data
+            avail.id = eventId;
           });
         }
       }
@@ -401,7 +432,6 @@ export default function Calendar({ availability, intervenantId, key }: { availab
   
     return events;
   }
-  
 
   // Mettre à jour les événements lors de la modification des disponibilités
   useEffect(() => {
@@ -528,7 +558,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
         allDaySlot={false}
         select={handleAddEvent}
         editable={true}
-        eventChange={handleEventChange} // Add this line
+        eventChange={handleEventChange}
         dayHeaderContent={(args) => {
           const date = new Date(args.date);
           const day = date.toLocaleDateString('fr-FR', { weekday: 'short' });

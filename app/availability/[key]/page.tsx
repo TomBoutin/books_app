@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: 'Accueil',
 };
 
-export default async function Page(props: { params: { key: string } }) {
-  const { key } = props.params;
+export default async function Page(props: { params: Promise<{ key: string }> }) {
+  const { key } = await props.params;
   const intervenant = await fetchIntervenantByKey(key);
 
   if (!intervenant) {
