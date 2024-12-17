@@ -307,7 +307,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
 
   // Fonction pour transformer les disponibilités en événements
   function transformAvailabilityToEvents(availability: any) {
-    let events: { title: string; start: string; end: string; groupId?: string; classNames?: string[] }[] = [];
+    let events: { title: string; start: string; end: string; groupId?: string; classNames?: string[], isDefault?: boolean }[] = [];
     const daysOfWeek = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
   
     availability = JSON.parse(availability);
@@ -363,7 +363,8 @@ export default function Calendar({ availability, intervenantId, key }: { availab
               start: startTime.toISOString(),
               end: endTime.toISOString(),
               groupId: `${isoYear}-W${isoWeekNumber}`,
-              classNames: availability.default.includes(avail) ? ['bg-blue-500 border-blue-500'] : ['bg-primary border-primary'],
+              classNames: availability.default.includes(avail) ? ['bg-blue-500 border-blue-500 opacity-50'] : ['bg-primary border-primary'],
+              isDefault: availability.default.includes(avail),
             });
           });
         }
@@ -443,27 +444,22 @@ export default function Calendar({ availability, intervenantId, key }: { availab
       calendarApi.changeView(view);
     }
   }
-
+  
   const renderEventContent = (eventInfo: any) => {
-    const isDefaultAvailability = JSON.parse(availability).default.some((avail: any) => {
-      return (
-        avail.days.split(', ').includes(moment(eventInfo.event.start).format('dddd')) &&
-        avail.from === moment(eventInfo.event.start).format('HH:mm') &&
-        avail.to === moment(eventInfo.event.end).format('HH:mm')
-      );
-    });
-
+    const isDefaultAvailability = eventInfo.event.extendedProps.isDefault;
+  
     return (
-      <div>
+      <div className='relative '>
         <span>{eventInfo.event.title}</span>
         {!isDefaultAvailability && (
-          <button onClick={() => handleDelete(eventInfo.event)}>
-            <TrashIcon className="w-4 h-4 text-red-500" />
+          <button onClick={() => handleDelete(eventInfo.event)} className="bg-slate-100 hover:bg-slate-200 p-2 rounded-md absolute top-1 right-1">
+            <TrashIcon className="w-4 h-4 text-black" />
           </button>
         )}
       </div>
     );
   };
+  
 
   return (
     <div>
@@ -484,7 +480,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
           <option value="dayGridMonth">Mois</option>
         </select>
       </div>
-        <div className=''>
+        <div className='flex items-center gap-2'>
           <button onClick={resetWeekAvailability} className="bg-blue-500 text-white p-2 rounded-md"><ArrowPathIcon className='h-5 w-5' /></button>
           <button onClick={markWeekAsSpecial} className="bg-red-500 text-white p-2 rounded-md"><TrashIcon className='w-5 h-5' /></button>
         </div>
