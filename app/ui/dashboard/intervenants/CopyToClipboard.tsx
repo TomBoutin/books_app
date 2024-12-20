@@ -9,10 +9,16 @@ export default function CopyToClipboard({ text }: { text: string }) {
 
   const copyToClipboard = () => {
     const url = `${process.env.NEXT_PUBLIC_URL_PATH}/availability/${text}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 3000); // Reset after 3 seconds
-    });
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 3000); // Reset after 3 seconds
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
+    } else {
+      console.error('La fonctionnalité de copie n\'est pas supportée par votre navigateur');
+    }
   };
 
   return (
