@@ -7,7 +7,7 @@ import Toast from './Toast';
 export default function CopyToClipboard({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 
-  const copyToClipboard = () => {
+  const copyToClipboard = async () => {
     const url = `${process.env.NEXT_PUBLIC_URL_PATH}/availability/${text}`;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(() => {
