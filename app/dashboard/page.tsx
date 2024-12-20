@@ -4,12 +4,8 @@ export default async function Home() {
   const data = await fetchAllIntervenant();
 
   return (
-    <div>
-      {data ? (
-        <pre>{JSON.stringify(data, null, 2)}</pre>
-      ) : (
-        <p>Failed to load data</p>
-      )}
-    </div>
+    <h1 className="text-2xl font-medium ">
+      Bienvenue sur le dashboard 
+    </h1>
   );
 }

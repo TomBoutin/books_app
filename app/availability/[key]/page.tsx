@@ -30,7 +30,7 @@ export default async function Page(props: { params: Promise<{ key: string }> }) 
   return (
     <main className="h-full min-h-dvh flex">
       <div className='max-w-60 w-full bg-slate-200 px-3 pt-5 sidenav'>
-        <h2 className='py-2'>Logo</h2>
+        <h2 className='py-2'>MMI Planner</h2>
       </div>
       <div className='w-full mt-5 mx-5'>
         <h2 className="text-xl font-semibold">Bonjour {intervenant.firstname} {intervenant.lastname}</h2>
