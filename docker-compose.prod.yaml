@@ -13,20 +13,6 @@ services:
       AUTH_SECRET: ${AUTH_SECRET} 
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST}
-    networks:
-      - db-network
-
-  # nginx:
-  #   image: nginx:latest
-  #   container_name: nginx
-  #   ports:
-  #     - "80:80"  # Expose le port 80 pour l'accès public
-  #   volumes:
-  #     - ./nginx/default.conf:/etc/nginx/conf.d/default.conf # Utilise un fichier de configuration personnalisé pour nginx
-  #   networks:
-  #     - app-network
-  #   depends_on:
-  #     - app
 
   db:
     image: postgres:17
@@ -36,26 +22,6 @@ services:
       POSTGRES_DB: projet
     volumes:
       - db-data:/var/lib/postgresql/data
-    networks:
-      - db-network
-    
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: drowssap
-      PGADMIN_CONFIG_PROXY_X_HOST_COUNT: 1
-      PGADMIN_CONFIG_PROXY_X_PREFIX_COUNT: 1
-    ports:
-      - "5050:80"
-    networks:
-      - db-network
-    depends_on:
-      - db
 
 volumes:
   db-data:
-
-networks:
-  db-network:
