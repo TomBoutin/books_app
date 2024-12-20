@@ -2,6 +2,8 @@
 
 import { useRef, useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
+import { DateSelectArg, EventApi, EventContentArg, EventDropArg } from '@fullcalendar/core';
+import { EventResizeDoneArg } from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction'; // Import the interaction plugin
@@ -9,180 +11,6 @@ import { ChevronRightIcon, ChevronLeftIcon, TrashIcon, ArrowPathIcon } from '@he
 import moment from 'moment';
 import 'moment/locale/fr'; // Assurez-vous d'importer la localisation française pour moment.js
 import { updateAvailability } from '@/app/lib/action';
-
-
-
-{/*
-  {
-    "default": [
-        {
-            "days": "lundi, mardi, mercredi, jeudi, vendredi",
-            "from": "8:00",
-            "to": "18:30"
-        }
-    ],
-    "S45": [
-        {
-            "days": "mardi, mercredi",
-            "from": "8:00",
-            "to": "19:30"
-        }
-    ],
-    "S46": [
-        {
-            "days": "mardi",
-            "from": "8:00",
-            "to": "19:30"
-        }
-    ],
-    "S47": [
-        {
-            "days": "mardi",
-            "from": "8:00",
-            "to": "18:00"
-        },
-        {
-            "days": "mercredi",
-            "from": "8:00",
-            "to": "13:00"
-        }
-    ],
-    "S48": [
-        {
-            "days": "mercredi, vendredi",
-            "from": "8:00",
-            "to": "19:30"
-        }
-    ],
-    "S49": [
-        {
-            "days": "mercredi, vendredi",
-            "from": "8:00",
-            "to": "19:30"
-        }
-    ],
-    "S50": [
-        {
-            "days": "mardi, mercredi",
-            "from": "8:00",
-            "to": "19:30"
-        }
-    ],
-    "S2": [
-        {
-            "days": "jeeudi",
-            "from": "8:00",
-            "to": "11:00"
-        }
-    ],
-    "S3": [
-        {
-            "days": "jeeudi",
-            "from": "8:00",
-            "to": "11:00"
-        }
-    ]
-}
-
-
-
-{
-    "default": [
-        {
-            "days": "lundi, mardi, mercredi, jeudi, vendredi",
-            "from": "8:00",
-            "to": "18:30"
-        }
-    ],
-    "S45": [
-        {
-            "days": "mardi, mercredi",
-            "from": "8:00",
-            "to": "19:30"
-        }
-    ],
-    "S46": [
-        {
-            "days": "mardi",
-            "from": "8:00",
-            "to": "19:30"
-        }
-    ],
-    "S47": [
-        {
-            "days": "mardi",
-            "from": "8:00",
-            "to": "18:00"
-        },
-        {
-            "days": "mercredi",
-            "from": "8:00",
-            "to": "13:00"
-        }
-    ],
-    "S48": [
-        {
-            "days": "mercredi, vendredi",
-            "from": "8:00",
-            "to": "19:30"
-        }
-    ],
-    "S49": [null],
-    "S50": [
-        {
-            "days": "mardi, mercredi",
-            "from": "8:00",
-            "to": "19:30"
-        },
-        {
-            "days": "vendredi",
-            "from": "07:30",
-            "to": "12:00"
-        },
-        {
-            "days": "jeudi",
-            "from": "07:30",
-            "to": "12:00"
-        },
-        {
-            "days": "vendredi",
-            "from": "09:30",
-            "to": "13:00"
-        }
-    ],
-    "S2": [
-        {
-            "days": "jeudi",
-            "from": "8:00",
-            "to": "11:00"
-        }
-    ],
-    "S3": [
-        {
-            "days": "jeudi",
-            "from": "8:00",
-            "to": "11:00"
-        }
-    ],
-    "S51": [
-        {
-            "days": "lundi, mardi, mercredi, jeudi, vendredi",
-            "from": "8:00",
-            "to": "18:30"
-        },
-        {
-            "days": "jeudi",
-            "from": "07:30",
-            "to": "11:00"
-        },
-        {
-            "days": "mardi",
-            "from": "06:30",
-            "to": "08:00"
-        }
-    ]
-}
-  */}
 
 moment.locale('fr');
 
@@ -193,14 +21,29 @@ interface Availability {
   id?: string;
 }
 
-export default function Calendar({ availability, intervenantId, key }: { availability: any, intervenantId: number, key: string }) {
+interface CalendarProps {
+  availability: string;
+  intervenantId: number;
+  key: string;
+}
+
+interface Event {
+  id: string;
+  title: string;
+  start: string;
+  end?: string;
+  url?: string;
+  groupId?: string;
+  classNames?: string[];
+  isDefault?: boolean;
+}
+
+export default function Calendar({ availability, intervenantId, key }: CalendarProps) {
   const calendarRef = useRef<FullCalendar | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [events, setEvents] = useState<
-    { title: string; start: string; end?: string; url?: string; groupId?: string }[]
-  >([]);
+  const [events, setEvents] = useState<Event[]>([]);
 
-  const handleAddEvent = async (addInfo: any) => {
+  const handleAddEvent = async (addInfo: DateSelectArg) => {
     const { start, end } = addInfo;
     const newEvent = {
       title: 'Disponible',
@@ -232,14 +75,15 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     const newEvents = transformAvailabilityToEvents(JSON.stringify(parsedAvailability));
     setEvents(newEvents);
   };
-  const handleDelete = async (event: any) => {
+
+  const handleDelete = async (event: EventApi) => {
     let parsedAvailability = JSON.parse(availability);
     const weekStart = moment(event.start).startOf('isoWeek');
     const isoWeekNumber = weekStart.isoWeek();
     const weekKey = `S${isoWeekNumber}`;
   
     // Vérifiez si l'événement fait partie des disponibilités par défaut
-    const isDefaultAvailability = parsedAvailability.default.some((avail: any) => {
+    const isDefaultAvailability = parsedAvailability.default.some((avail: Availability) => {
       return (
         avail.days === moment(event.start).format('dddd') &&
         avail.from === moment(event.start).format('HH:mm') &&
@@ -249,11 +93,11 @@ export default function Calendar({ availability, intervenantId, key }: { availab
   
     if (isDefaultAvailability) {
       // Créez une nouvelle entrée pour la semaine actuelle avec les disponibilités par défaut
-      parsedAvailability[weekKey] = parsedAvailability.default.map((avail: any) => ({ ...avail }));
+      parsedAvailability[weekKey] = parsedAvailability.default.map((avail: Availability) => ({ ...avail }));
     }
   
     // Supprimez l'événement de la disponibilité de la semaine actuelle
-    parsedAvailability[weekKey] = parsedAvailability[weekKey].filter((avail: any) => {
+    parsedAvailability[weekKey] = parsedAvailability[weekKey].filter((avail: Availability) => {
       return !(
         avail.days === moment(event.start).format('dddd') &&
         avail.from === moment(event.start).format('HH:mm') &&
@@ -274,8 +118,6 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     setEvents(newEvents);
   };
 
-  
-
   const resetWeekAvailability = async () => {
     let parsedAvailability = JSON.parse(availability);
     const weekStart = moment(currentDate).startOf('isoWeek');
@@ -283,7 +125,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     const weekKey = `S${isoWeekNumber}`;
   
     // Reset the week availability to default
-    parsedAvailability[weekKey] = parsedAvailability.default.map((avail: any) => ({ ...avail }));
+    parsedAvailability[weekKey] = parsedAvailability.default.map((avail: Availability) => ({ ...avail }));
   
     // Remove the special availability entry for the current week
     delete parsedAvailability[weekKey];
@@ -313,11 +155,11 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     setEvents(newEvents);
   };
 
-  function transformAvailabilityToEvents(availability: any) {
-    let events: { id: string; title: string; start: string; end: string; classNames?: string[], isDefault?: boolean }[] = [];
+  function transformAvailabilityToEvents(availability: string): Event[] {
+    let events: Event[] = [];
     const daysOfWeek = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
 
-    availability = JSON.parse(availability) as { [key: string]: Availability[] };
+    const parsedAvailability = JSON.parse(availability) as { [key: string]: Availability[] };
 
     const currentYear = moment().year();
     const startDate = moment().startOf('year');
@@ -337,15 +179,15 @@ export default function Calendar({ availability, intervenantId, key }: { availab
       const isoYear = weekStart.isoWeekYear();
       const weekKey = `S${isoWeekNumber}`;
 
-      if (!availability[weekKey] && availability.default) {
-        availability[weekKey] = availability.default;
+      if (!parsedAvailability[weekKey] && parsedAvailability.default) {
+        parsedAvailability[weekKey] = parsedAvailability.default;
       }
 
-      if (availability[weekKey]) {
+      if (parsedAvailability[weekKey]) {
         // Filter out null values
-        availability[weekKey] = availability[weekKey].filter((avail: any) => avail !== null);
+        parsedAvailability[weekKey] = parsedAvailability[weekKey].filter((avail: Availability | null) => avail !== null) as Availability[];
 
-        for (const avail of availability[weekKey] as { days: string; from: string; to: string }[]) {
+        for (const avail of parsedAvailability[weekKey]) {
           if (!avail.days) continue;
 
           const days = avail.days.split(', ');
@@ -370,8 +212,8 @@ export default function Calendar({ availability, intervenantId, key }: { availab
               title: 'Disponible',
               start: startTime.toISOString(),
               end: endTime.toISOString(),
-              classNames: availability.default.includes(avail) ? ['bg-blue-500 border-blue-500 opacity-50'] : ['bg-primary border-primary'],
-              isDefault: availability.default.includes(avail),
+              classNames: parsedAvailability.default.includes(avail) ? ['bg-blue-500 border-blue-500 opacity-50'] : ['bg-primary border-primary'],
+              isDefault: parsedAvailability.default.includes(avail),
             });
           });
         }
@@ -381,7 +223,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     return events;
   }
 
-  const handleEventResize = async (resizeInfo: any) => {
+  const handleEventResize = async (resizeInfo: EventResizeDoneArg) => {
     const { event } = resizeInfo;
     let parsedAvailability = JSON.parse(availability);
     const weekKey = `S${moment(event.start).isoWeek()}`;
@@ -390,7 +232,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     const to = moment(event.end).format('HH:mm');
 
     // Supprimer l'ancienne disponibilité
-    parsedAvailability[weekKey] = parsedAvailability[weekKey].filter((avail: any) => {
+    parsedAvailability[weekKey] = parsedAvailability[weekKey].filter((avail: Availability) => {
       return !(
         avail.days === day &&
         avail.from === moment(resizeInfo.oldEvent.start).format('HH:mm') &&
@@ -405,8 +247,8 @@ export default function Calendar({ availability, intervenantId, key }: { availab
       if (evt.id === event.id) {
         return {
           ...evt,
-          start: event.start.toISOString(),
-          end: event.end.toISOString(),
+          start: event.start ? event.start.toISOString() : '',
+          end: event.end ? event.end.toISOString() : '',
         };
       }
       return evt;
@@ -415,7 +257,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     await updateAvailability(parsedAvailability, intervenantId, key);
   };
 
-  const handleEventDrop = async (dropInfo: any) => {
+  const handleEventDrop = async (dropInfo: EventDropArg) => {
     const { event } = dropInfo;
     let parsedAvailability = JSON.parse(availability);
     const oldWeekKey = `S${moment(dropInfo.oldEvent.start).isoWeek()}`;
@@ -428,7 +270,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     const newTo = moment(event.end).format('HH:mm');
   
     // Supprimer l'ancienne disponibilité
-    parsedAvailability[oldWeekKey] = parsedAvailability[oldWeekKey].filter((avail: any) => {
+    parsedAvailability[oldWeekKey] = parsedAvailability[oldWeekKey].filter((avail: Availability) => {
       return !(
         avail.days === oldDay &&
         avail.from === oldFrom &&
@@ -446,8 +288,8 @@ export default function Calendar({ availability, intervenantId, key }: { availab
       if (evt.id === event.id) {
         return {
           ...evt,
-          start: event.start.toISOString(),
-          end: event.end.toISOString(),
+          start: event.start ? event.start.toISOString() : '',
+          end: event.end ? event.end.toISOString() : '',
         };
       }
       return evt;
@@ -455,6 +297,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
   
     await updateAvailability(parsedAvailability, intervenantId, key);
   };
+
   // Mettre à jour les événements lors de la modification des disponibilités
   useEffect(() => {
     const newEvents = transformAvailabilityToEvents(availability);
@@ -462,7 +305,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
   }, [availability]);
 
   // Gérer la navigation dans le calendrier
-  function handleDatesSet(dateInfo: any) {
+  function handleDatesSet(dateInfo: { start: Date }) {
     setCurrentDate(dateInfo.start);
     console.log(dateInfo);
   }
@@ -524,7 +367,7 @@ export default function Calendar({ availability, intervenantId, key }: { availab
     }
   }
   
-  const renderEventContent = (eventInfo: any) => {
+  const renderEventContent = (eventInfo: EventContentArg) => {
     const isDefaultAvailability = eventInfo.event.extendedProps.isDefault;
   
     return (
