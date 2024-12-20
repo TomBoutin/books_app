@@ -6,7 +6,7 @@
 @layer base {
   :root{
     /* --primary: 26deg, 100%, 50%; hsl(26, 100%, 50%) */
-    --primary: 120deg, 61%, 34%;
+    --primary: 120deg, 61%, 34%; /* hsl(120, 61%, 34%) #228c22*/
   }
 } 
 
