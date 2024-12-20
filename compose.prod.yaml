@@ -2,7 +2,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.prod
+      dockerfile: ./prod/Dockerfile
     ports:
       - "3000:3000"  # Port d'exposition interne pour l'application
     environment:
