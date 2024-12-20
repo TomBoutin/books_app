@@ -9,10 +9,13 @@ services:
       - .:/app        # Monte le dossier actuel dans le conteneur
       - /app/node_modules # Évite les conflits avec node_modules de l'hôte
     environment:
-      - NODE_ENV=development
-      - POSTGRES_DB=projet
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=drowssap
+      NODE_ENV: development
+      POSTGRES_DB: projet
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: drowssap
+      AUTH_SECRET: ${AUTH_SECRET} 
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      AUTH_TRUST_HOST: ${AUTH_TRUST_HOST}
     networks:
       - db-network
 
