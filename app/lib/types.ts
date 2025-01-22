@@ -16,15 +16,26 @@ export interface Intervenant {
   }
   
 
-  export type IntervenantField = {
-    id: string;
-    name: string;
+  export type BookField = {
+    id : number;
+    title: string;
   };
 
-  export type IntervenantForm = {
+  export type BookForm = {
     id: number;
-    email: string;
-    firstname: string;
-    lastname: string;
-    enddate: string;
+    title: string;
+    author: string;
+    publication_year: number;
+    genre: string;
+    price: number;
   };
+
+
+  export interface Books {
+    id: number;
+    title: string;
+    author: string;
+    publication_year: number;
+    genre: string;
+    price: number;
+  }

@@ -1,34 +1,33 @@
-import { fetchFilteredIntervenant } from "@/app/lib/data";
+import { fetchFilteredBooks } from "@/app/lib/data";
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { format, isBefore } from 'date-fns';
-import { DeleteIntervenant, UpdateIntervenant, RegenerateKey } from './buttons';
-import CopyToClipboard from '@/app/ui/dashboard/intervenants/CopyToClipboard';
+import { DeleteBook, UpdateBook } from './buttons';
 
-export default async function IntervenantTable({
+export default async function BookTable({
     query,
     currentPage,
   }: {
     query: string;
     currentPage: number;
   }) {
-    const Intervenant = await fetchFilteredIntervenant(query, currentPage);
+    const Book = await fetchFilteredBooks(query, currentPage);
 
   return (
     <div className="mt-6 flow-root overflow-visible">
       <div className="inline-block min-w-full align-middle">
         <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
           <div className="md:hidden">
-            {Intervenant?.map((intervenant) => (
+            {Book?.map((book) => (
               <div
-                key={intervenant.id}
+                key={book.id}
                 className="mb-2 w-full rounded-md bg-white p-4"
               >
                 <div className="flex items-center justify-between border-b pb-4">
                   <div>
                     <div className="mb-2 flex items-center">
-                      <p>{intervenant.firstname}</p>
+                      <p>{book.title}</p>
                     </div>
-                    <p className="text-sm text-gray-500">{intervenant.email}</p>
+                    <p className="text-sm text-gray-500">{book.author}</p>
                   </div>
                 </div>
               </div>
@@ -38,19 +37,19 @@ export default async function IntervenantTable({
             <thead className="rounded-lg text-left text-sm font-normal">
               <tr>
                 <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                  Prénom
+                  Titre
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Nom
+                  Auteur
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Email
+                  Date de publication
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Clé
+                  Genre
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Validité de la clé
+                  Prix
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium text-end">
                   <span className="">Action</span>
@@ -58,40 +57,32 @@ export default async function IntervenantTable({
               </tr>
             </thead>
             <tbody className="bg-white">
-              {Intervenant?.map((intervenant) => (
+              {Book?.map((book) => (
                 <tr
-                  key={intervenant.id}
+                  key={book.id}
                   className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
                 >
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex items-center gap-3">
-                      <p>{intervenant.firstname}</p>
+                      <p>{book.title}</p>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    {intervenant.lastname}
+                    {book.author}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    {intervenant.email}
+                    {book.publication_year}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    <CopyToClipboard text={intervenant.key} />
+                    {book.genre}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    <div className="flex items-center gap-2">
-                      {isBefore(new Date(), new Date(intervenant.enddate)) ? (
-                        <CheckCircleIcon className="w-6 h-6 text-green-500" />
-                      ) : (
-                        <XCircleIcon className="w-6 h-6 text-red-500" />
-                      )}
-                      <span>{format(new Date(intervenant.enddate), 'dd/MM/yyyy')}</span>
-                    </div>
+                    {book.price}
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">
-                      <RegenerateKey id={intervenant.id} />
-                      <UpdateIntervenant id={intervenant.id} />
-                      <DeleteIntervenant id={intervenant.id} /> 
+                      <UpdateBook id={book.id} />
+                      <DeleteBook id={book.id} /> 
                     </div>
                   </td>
                 </tr>

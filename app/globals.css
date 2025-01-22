@@ -6,28 +6,11 @@
 @layer base {
   :root{
     /* --primary: 26deg, 100%, 50%; hsl(26, 100%, 50%) */
-    --primary: 120deg, 61%, 34%; /* hsl(120, 61%, 34%) #228c22*/
+    /* --primary: 120deg, 61%, 34%; /* hsl(120, 61%, 34%) #228c22*/
+    
+    /* --primary: 120deg, 61%, 34%; /* hsl(120, 61%, 34%) #228c22*/
+    
+    --primary: 234deg, 69%, 38%; /* hsl(234, 69%, 38%) #1e2ba4*/
   }
 } 
 
-
-/* Exemple de styles pour le modal */
-.modal {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 500px;
-  margin: auto;
-}
-
-.overlay {
-  background: rgba(0, 0, 0, 0.5);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}

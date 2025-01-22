@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from '@/app/lib/db';
-import { Intervenant } from '@/app/lib/types';
+import { Intervenant, Books } from '@/app/lib/types';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
@@ -9,33 +9,39 @@ import { v4 as uuidv4 } from 'uuid';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 import bcrypt from 'bcrypt';
+import { title } from 'process';
 
 const ITEMS_PER_PAGE = 10;
 
 const CreateFormSchema = z.object({
-    email: z.string().email(),
-    firstname: z.string(),
-    lastname: z.string(),
+    title: z.string(),
+    author: z.string(),
+    publication_year: z.number(),
+    genre: z.string(),
+    price: z.number(),
 });
 
 const UpdateFormSchema = z.object({
-    email: z.string().email(),
-    firstname: z.string(),
-    lastname: z.string(),
-    enddate: z.string(),
+    title: z.string(),
+    author: z.string(),
+    publication_year: z.number(),
+    genre: z.string(),
+    price: z.number(),
 });
 
 // const CreateIntervenant = CreateFormSchema.omit({email: true})
-const CreateIntervenant = CreateFormSchema;
+const CreateBook = CreateFormSchema;
 
-const UpdateIntervenant = UpdateFormSchema;
+const UpdateBook = UpdateFormSchema;
 
 
 export type CreateState = {
     errors?: {
-        email?: string[];
-        firstname?: string[];
-        lastname?: string[];
+        title?: string[];
+        author?: string[];
+        publication_year?: string[];
+        genre?: string[];
+        price?: string[];
         
     };
     message?: string | null;
@@ -43,155 +49,98 @@ export type CreateState = {
 
 export type UpdateState = {
     errors?: {
-        email?: string[];
-        firstname?: string[];
-        lastname?: string[];
-        enddate?: string[];
+        title?: string[];
+        author?: string[];
+        publication_year?: string[];
+        genre?: string[];
+        price?: string[];
     };
     message?: string | null;
 };
 
 
-export async function createIntervenant(prevState: CreateState, formData: FormData) {
+export async function createBook(prevState: CreateState, formData: FormData) {
     // Validate form using Zod
-    const validatedFields = CreateIntervenant.safeParse({
-        email: formData.get('email'),
-        firstname: formData.get('firstname'),
-        lastname: formData.get('lastname'),
+    const validatedFields = CreateBook.safeParse({
+        title: formData.get('title'),
+        author: formData.get('author'),
+        publication_year: Number(formData.get('publication_year')),
+        genre: formData.get('genre'),
+        price: Number(formData.get('price'))
     });
 
     // If form validation fails, return errors early. Otherwise, continue.
     if (!validatedFields.success) {
         return {
             errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Champs invalides. Erreur lors de la création de l\'intervenant.',
+            message: 'Champs invalides. Erreur lors de la création du livre.',
         };
     }
 
     // Prepare data for insertion into the database
-    const { email, firstname, lastname } = validatedFields.data;
-    const key = uuidv4();
-    const date = new Date().toISOString().split('T')[0];
-    
-    // enddate = date + 2 mois
-    const enddate = new Date();
-    enddate.setMonth(enddate.getMonth() + 2);
-    const enddateString = enddate.toISOString().split('T')[0];
-
-    console.log('data', email, firstname, lastname, key, date, enddateString);
+    const { title, author, publication_year, genre, price } = validatedFields.data;
 
     // Insert data into the database
     try {
         const client = await db.connect();
-        await client.query('INSERT INTO public.intervenants(email, firstname, lastname, key, creationdate, enddate) VALUES ($1, $2, $3, $4, $5, $6)', [email, firstname, lastname, key, date, enddateString]);
+        await client.query('INSERT INTO public.books (title, author, publication_year, genre, price) VALUES ($1, $2, $3, $4, $5)', [title, author, publication_year, genre, price]);
         client.release();
     } catch (error) {
         console.error('Database Error:', error);
-        if ((error as any).code == '23505') { // PostgreSQL unique violation error code
-            return {
-                errors: { email: ['Cet email est déjà utilisé.'] },
-                message: 'Erreur lors de la création de l\'intervenant.',
-            };
-        }
         return {
-            message: 'Erreur lors de la création de l\'intervenant.',
+            message: 'Erreur lors de la création du livre.',
         };
     }
 
     // Revalidate the cache for the invoices page and redirect the user.
-    revalidatePath('/dashboard/intervenants');
-    redirect('/dashboard/intervenants');
+    revalidatePath('/dashboard/books');
+    redirect('/dashboard/books');
 }
 
 
-export async function updateIntervenant(
+export async function updateBook(
     id: string,
     prevState: UpdateState,
     formData: FormData,
   ) {
-    const validatedFields = UpdateIntervenant.safeParse({
-        email: formData.get('email'),
-        firstname: formData.get('firstname'),
-        lastname: formData.get('lastname'),
-        enddate: formData.get('enddate'),
+    const validatedFields = UpdateBook.safeParse({
+      title: formData.get('title'),
+      author: formData.get('author'),
+      publication_year: Number(formData.get('publication_year')),
+      genre: formData.get('genre'),
+      price: Number(formData.get('price'))
     });
    
     if (!validatedFields.success) {
         return {
             errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Champs invalides. Erreur lors de la modification de l\'intervenant.',
+            message: 'Champs invalides. Erreur lors de la modification du livre.',
         };
     }
    
-    const { email, firstname, lastname, enddate } = validatedFields.data;
+    const { title, author, publication_year, genre, price } = validatedFields.data;
    
     try {
         const client = await db.connect();
-        await client.query('UPDATE public.intervenants SET email = $1, firstname = $2, lastname = $3, enddate = $4 WHERE id = $5', [email, firstname, lastname, enddate, id]);
+        await client.query('UPDATE public.books SET title = $1, author = $2, publication_year = $3, genre = $4, price = $5 WHERE id = $6', [title, author, publication_year, genre, price, id]);
         client.release();
     } catch (error) {
         console.error('Database Error:', error);
-        if ((error as any).code == '23505') { // PostgreSQL unique violation error code
-            return {
-                errors: { email: ['Cet email est déjà utilisé.'] },
-                message: 'Erreur lors de la modification de l\'intervenant.',
-            };
-        }
         return {
-            message: 'Erreur lors de la modification de l\'intervenant.',
+            message: 'Erreur lors de la modification du livre.',
         };
 }
    
-    revalidatePath('/dashboard/intervenants');
-    redirect('/dashboard/intervenants');
+    revalidatePath('/dashboard/books');
+    redirect('/dashboard/books');
   }
 
 
-export async function deleteIntervenant(id: number): Promise<void> {
+export async function deleteBook(id: number): Promise<void> {
     try {
         const client = await db.connect();
-        await client.query('DELETE FROM public.intervenants WHERE id = $1', [id]);
-        revalidatePath('/dashboard/intervenants');
-        client.release();
-    } catch (err) {
-        console.error(err);
-        throw err;
-    }
-}
-
-export async function regenerateKey(id: number): Promise<void> {
-    const key = uuidv4();
-    const date = new Date().toISOString().split('T')[0];
-    const enddate = new Date();
-    enddate.setMonth(enddate.getMonth() + 2);
-    const enddateString = enddate.toISOString().split('T')[0];
-    try {
-        const client = await db.connect();
-        await client.query('UPDATE public.intervenants SET key = $1, creationdate = $2, enddate = $3 WHERE id = $4', [key, date, enddateString, id]);
-        revalidatePath('/dashboard/intervenants');
-        client.release();
-    } catch (err) {
-        console.error(err);
-        throw err;
-    }
-}
-
-export async function regenerateAllKeys(): Promise<void> {
-    const date = new Date().toISOString().split('T')[0];
-    const enddate = new Date();
-    enddate.setMonth(enddate.getMonth() + 2);
-    const enddateString = enddate.toISOString().split('T')[0];
-    try {
-        const client = await db.connect();
-        const result = await client.query('SELECT id FROM public.intervenants');
-        const intervenants = result.rows;
-
-        for (const intervenant of intervenants) {
-            const key = uuidv4();
-            await client.query('UPDATE public.intervenants SET key = $1, creationdate = $2, enddate = $3 WHERE id = $4', [key, date, enddateString, intervenant.id]);
-        }
-
-        revalidatePath('/dashboard/intervenants');
+        await client.query('DELETE FROM public.books WHERE id = $1', [id]);
+        revalidatePath('/dashboard/books');
         client.release();
     } catch (err) {
         console.error(err);
@@ -217,36 +166,50 @@ export async function authenticate(
       throw error;
     }
   }
-//   export async function createUser(email: string, password: string, name?: string): Promise<void> {
-//     const hashedPassword = await bcrypt.hash(password, 10); // Chiffre le mot de passe avec un coût de 10
+
+  
+// export async function createBook(book: Books): Promise<void> {
 //     try {
 //       const client = await db.connect();
 //       await client.query(
-//         'INSERT INTO public.users (email, password) VALUES ($1, $2)',
-//         [email, hashedPassword]
+//         'INSERT INTO public.books (title, author, publication_year, genre, price) VALUES ($1, $2, $3, $4, $5)',
+//         [book.title, book.author, book.publication_year, book.genre, book.price]
 //       );
 //       client.release();
-//     } catch (error) {
-//       console.error('Failed to create user:', error);
-//       throw new Error('Failed to create user.');
+//       revalidatePath('/dashboard/books');
+//       redirect('/dashboard/books');
+//     } catch (err) {
+//       console.error(err);
+//       throw err;
 //     }
 //   }
+  
+//   export async function updateBook(book: Books): Promise<void> {
+//     try {
+//       const client = await db.connect();
+//       await client.query(
+//         'UPDATE public.books SET title = $1, author = $2, publication_year = $3, genre = $4, price = $5 WHERE id = $6',
+//         [book.title, book.author, book.publication_year, book.genre, book.price, book.id]
+//       );
+//       client.release();
+//       revalidatePath('/dashboard/books');
+//       redirect('/dashboard/books');
 
-export async function updateAvailability(newEvent: { title: string; start: string; end?: string }, intervenantId: number, key: string) {
-    try {
-      const client = await db.connect();
-      const { start, end } = newEvent;
+//     } catch (err) {
+//       console.error(err);
+//       throw err;
+//     }
+//   }
   
-      // Replace the entire column of availability for the intervenant
-      await client.query(
-        'UPDATE public.intervenants SET availability = $1 WHERE id = $2',
-        [JSON.stringify(newEvent), intervenantId]
-      );
-  
-      revalidatePath(`/availability/${key}`);
-      client.release();
-    } catch (err) {
-      console.error('Database Error:', err);
-      throw new Error('Erreur lors de la mise à jour des disponibilités.');
-    }
-  }
+//   export async function deleteBook(id: number): Promise<void> {
+//     try {
+//       const client = await db.connect();
+//       await client.query('DELETE FROM public.books WHERE id = $1', [id]);
+//       client.release();
+//       revalidatePath('/dashboard/books');
+//       redirect('/dashboard/books');
+//     } catch (err) {
+//       console.error(err);
+//       throw err;
+//     }
+//   }
